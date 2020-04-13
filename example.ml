@@ -24,13 +24,13 @@ let embedded_csv = "\
 
 let csvs =
   List.map (fun name -> name, Csv.load name)
-           [ "examples/example1.csv"; "examples/example2.csv" ]
+    [ "examples/example1.csv"; "examples/example2.csv" ]
 
 
 let () =
   let ecsv = Csv.input_all(Csv.of_string embedded_csv) in
-    printf "---Embedded CSV---------------------------------\n" ;
-    Csv.print_readable ecsv;
+  printf "---Embedded CSV---------------------------------\n" ;
+  Csv.print_readable ecsv;
 
   List.iter (
     fun (name, csv) ->
@@ -38,12 +38,12 @@ let () =
       Csv.print_readable csv
   ) csvs;
   printf "Compare (Embedded CSV) example1.csv = %i\n"
-         (Csv.compare ecsv (snd(List.hd csvs)))
+    (Csv.compare ecsv (snd(List.hd csvs)))
 
 let () =
   (* Save it to a file *)
   let ecsv = Csv.input_all(Csv.of_string embedded_csv) in
-  let fname = Filename.concat (Filename.get_temp_dir_name()) "example.csv" in
+  let fname = Filename.concat (Filename.current_dir_name) "exported.csv" in
   Csv.save fname ecsv;
   printf "Saved CSV to file %S.\n" fname
 
