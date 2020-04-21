@@ -68,4 +68,15 @@ let change_cell tbl i j value =
     tbl.(i).(j) <- value;
     tbl
 
+let get_col_data tbl s = 
+  let index_to_get = find_index s tbl.(0) in
+  let res = Array.make (num_rows tbl) "" in
+  Array.iteri (fun idx lst -> res.(idx) <- lst.(index_to_get)) tbl; 
+
+  (*Include this line to exclude name of column*)
+  (*remove_index 0 res  *) 
+
+  res
+
+
 (* Format.printf "@[<v>%a@]@." *)

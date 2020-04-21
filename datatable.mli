@@ -45,10 +45,9 @@ val del_row : int -> t -> t
     ([num_rows] tbl - 1), or j is outside of the range 0 to ([num_cols] tbl - 1)*)
 val change_cell : t -> int -> int -> string -> t
 
-(** [get_contents tbl s] is  is the data stored in [tbl] in the column 
-    indicated by header [s]
-     Requires: [tbl] contains a header named [s] *)
-(* val get_contents : t -> string -> t *)
+(** [get_col_data tbl s] is the data stored in [tbl] in the column named [s]
+     Requires: [tbl] contains a column named [s] *)
+val get_col_data :  t -> string -> string array
 
 (** [get_contents tbl s] is the [Some contents], where contents is the data 
     stored in [tbl] in the column indicated by header [s], or None if [tbl] 
