@@ -25,8 +25,9 @@ val contains_col : t -> string -> bool
     Raises: [Invalid_Argument] if [tbl] already contain a header named [s] *)
 val add_col : string -> t -> t
 
-(** [del_col s tbl] is [tbl] without the column with header named [s]. Returns
-    [tbl] if [s] is not a header in [tbl] *)
+(** [del_col s tbl] is [tbl] without the column with header named [s].
+    Requires: [tbl] contains a column named [s] 
+    Raises: [Invalid_Argument] if [tbl] does not contains a column named [s] *)
 val del_col : string -> t -> t
 
 (** [add_row tbl] is [tbl] with an empty row added. 
@@ -43,13 +44,13 @@ val del_row : int -> t -> t
     [v]. Cannot change column name.
     Raises: [Invalid_argument] if i is outside of the range 1 to 
     ([num_rows] tbl - 1), or j is outside of the range 0 to ([num_cols] tbl - 1)*)
-val change_cell : t -> int -> int -> string -> t
+val change_cell : int -> int -> string -> t -> t
 
 (** [get_col_data tbl s] is the data stored in [tbl] in the column named [s]
-     Requires: [tbl] contains a column named [s] *)
-val get_col_data :  t -> string -> string array
+    Requires: [tbl] contains a column named [s] 
+    Raises: [Invalid_Argument] if [tbl] does not contains a column named [s] *)
+val get_col_data : string -> t ->  string array
 
-(** [get_contents tbl s] is the [Some contents], where contents is the data 
-    stored in [tbl] in the column indicated by header [s], or None if [tbl] 
-    does not contain header [s] *)
-(* val get_contents_opt : t -> string -> t option *)
+(* (** [get_col_data_opt tbl s] is the Some data stored in [tbl] in the column 
+    named [s], or None if [tbl] does not contain a column named [s] *)
+val get_col_data : string -> t ->  string array *)

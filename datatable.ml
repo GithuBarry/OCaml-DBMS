@@ -48,7 +48,9 @@ let remove_index i array =
 
 let del_col s tbl =
   if is_empty tbl then tbl
-  else if num_cols tbl = 1 && contains_col tbl s then empty
+  else if not (contains_col tbl s) then
+    raise (Invalid_argument "Specified Column doesn't exist")
+  else if num_cols tbl = 1 then empty
   else
     let index_to_del = find_index s tbl.(0) in
     Array.map (remove_index index_to_del) tbl
@@ -58,25 +60,24 @@ let add_row tbl =
   else Array.append tbl (Array.make_matrix 1 (num_cols tbl) "")
 
 let del_row i tbl = 
-    if i = 0 then raise (Invalid_argument "Can't delete first row of table") 
-    else remove_index i tbl
+  if i = 0 then raise (Invalid_argument "Can't delete first row of table") 
+  else remove_index i tbl
 
-let change_cell tbl i j value =
-    if i < 0 || i > (num_rows tbl - 1) || j < 0 || j > (num_cols tbl - 1)
-    then raise (Invalid_argument "index out of bounds") else
-    if i = 0 then raise (Invalid_argument "Can't modify column names") else
-    tbl.(i).(j) <- value;
-    tbl
+let change_cell i j value tbl=
+  if i < 0 || i > (num_rows tbl - 1) || j < 0 || j > (num_cols tbl - 1)
+  then raise (Invalid_argument "index out of bounds") else
+  if i = 0 then raise (Invalid_argument "Can't modify column names") else
+  tbl.(i).(j) <- value;
+  tbl
 
-let get_col_data tbl s = 
+let get_col_data s tbl =
   let index_to_get = find_index s tbl.(0) in
-  let res = Array.make (num_rows tbl) "" in
-  Array.iteri (fun idx lst -> res.(idx) <- lst.(index_to_get)) tbl; 
+  if index_to_get = -1 then
+    raise (Invalid_argument "Specified Column doesn't exist")
+  else
+    let res = Array.make (num_rows tbl) "" in
+    Array.iteri (fun idx lst -> res.(idx) <- lst.(index_to_get)) tbl;
 
-  (*Include this line to exclude name of column*)
-  (*remove_index 0 res  *) 
-
-  res
-
-
-(* Format.printf "@[<v>%a@]@." *)
+    (*Include this line to exclude name of column*)
+    (*remove_index 0 res *)
+    res
