@@ -90,7 +90,7 @@ let keyword_partition keywords body =
   |> List.map (fun (a,list) -> (a,List.rev list))
 
 
-(** [parse_columns str_list] returns column title out of [str_list]
+(** [parse_column str_list] returns a column title out of [str_list]
     and [str_list] should contain exactly one column name
     Raise: [Empty] when [str_list] is empty
 *)
@@ -104,7 +104,9 @@ let parse_column str_list : column_object=  match str_list with
 let parse_columns str_list =  match str_list with
     [] -> raise Empty
   | ["*"] -> Wildcard
-  | list -> Columns (list |> String.concat " " |> String.split_on_char ',' )
+  | list -> Columns (list |> String.concat " " 
+                     |> String.split_on_char ',' 
+                     |> List.map String.trim)
 
 (** [parse_bi_re str] returns a [bi_re] corrosponding tp [str]
     Raise: Failure when [str] is illeagal*)
@@ -129,7 +131,7 @@ let parse_value str_list =  match str_list with
     [] -> raise Empty
   | list -> list |> String.concat " "
 
-(** [parse_columns str_list] returns a where [command_subject] out of [str_list]
+(** [parse_expr str_list] returns a where [command_subject] out of [str_list]
     Requires: str_list not to include "WHERE"
     Raise: [Empty] when [str_list] is empty
     Raise: [Malformed] when [str_list] cannot be parsed to a where object
@@ -172,11 +174,40 @@ let parse_select str_list : command =
     else [OrderBy (parse_columns (List.assoc "BY" assoc_list))] in
   Select (parse_columns after_select), subject, formatter
 
+(** [parse_set str_list] returns [set_objects] which [str_list] represents*)
+let parse_set str_list : set_objects = 
+  str_list 
+  |> String.concat " " 
+  |> String.split_on_char ',' 
+  |> List.map String.trim 
+  |> List.map (String.split_on_char '=') 
+  |> List.map (function (h::t) -> (h,String.concat " " t)
+                      | []->raise Malformed) 
+  |> List.map (fun (x,y) -> (String.trim x, String.trim y))
+
+
+(** [parse_select str_list] is the command from [str_list] 
+    with command_verb being [Parse]
+    Requires: [str_list] should be string list inluding the keyword "PARSE"
+*)
+let parse_update str_list : command = 
+  let assoc_list = keyword_partition ["UPDATE";"SET";"WHERE"] str_list in
+  let after_update = List.assoc "UPDATE" assoc_list in 
+  let after_set = List.assoc "SET" assoc_list in
+  let subject = 
+    if List.assoc_opt "WHERE" assoc_list = None 
+    then [Set (parse_set after_set)] 
+    else [Where (parse_expr (List.assoc "WHERE" assoc_list)); 
+          Set (parse_set after_set)]
+  in
+  Update (parse_table_name after_update), subject, []
+
 (** No support for 
     - use of [']
     - Any title, value, name with consecutively 2+ spaces. e.g. "Last     Name" 
     - Column name with [,]
     - Not
+    - No space in bi-relation. "x>0" must be written as "x > 0" and etc. 
     - Greater than wrtten as "> =" or similar separation of style
     - Adding a space after a comma e.g. "a, b" is ["[a],[ b]"] not ["[a],[b]"]
 *)
@@ -186,7 +217,7 @@ let parse str : command=
   match command_list with 
     "SELECT"::_ -> parse_select command_list
   | "INSERT"::_ -> failwith("Unimplemented")
-  | "UPDATE"::_ -> failwith("Unimplemented")
+  | "UPDATE"::_ -> parse_update command_list
   | "DELETE"::_ -> failwith("Unimplemented")
   | "Quit"::_ -> (Quit, [], [])
   | _ -> raise Malformed
