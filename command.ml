@@ -106,6 +106,8 @@ let parse_columns str_list =  match str_list with
   | ["*"] -> Wildcard
   | list -> Columns (list |> String.concat " " |> String.split_on_char ',' )
 
+(** [parse_bi_re str] returns a [bi_re] corrosponding tp [str]
+    Raise: Failure when [str] is illeagal*)
 let parse_bi_re str = match str with 
     ">" -> GT
   | "=" -> EQ
@@ -114,11 +116,15 @@ let parse_bi_re str = match str with
   | "<=" -> LTEQ
   | _ -> failwith("Internal Error: Illeagal Relation")
 
+(** [parse_bi_op str] returns a [bi_op] corrosponding tp [str]
+    Raise: Failure when [str] is illeagal*)
 let parse_bi_op str = match str with 
     "AND" -> AND
   | "OR" -> OR
   | _ -> failwith("Internal Error: Illeagal Operator")
 
+(** [parse_value str_list] returns a [valur_object]
+    Raise: Empty when [str_list] is empty *)
 let parse_value str_list =  match str_list with
     [] -> raise Empty
   | list -> list |> String.concat " "
@@ -172,6 +178,7 @@ let parse_select str_list : command =
     - Column name with [,]
     - Not
     - Greater than wrtten as "> =" or similar separation of style
+    - Adding a space after a comma e.g. "a, b" is ["[a],[ b]"] not ["[a],[b]"]
 *)
 let parse str : command= 
   let command_list_raw = String.split_on_char ' ' str in 
