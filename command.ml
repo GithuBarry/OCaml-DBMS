@@ -43,7 +43,6 @@ type command_subject =
 
 type command_formatter = 
   | OrderBy of column_objects
-  | Distinct
 
 type command = command_verb * command_subject list 
                * command_formatter list
@@ -68,6 +67,29 @@ let list_partition keys body =
   in
   list_partition_helper keys body []
 
+(** [keyword_partition keywords body] is association list of 
+    [keywords] and its immediately following content in [body] until the next 
+    occurence of element from [keywords].
+    if [keywords] are [k1;k2;...] and [body] is [k1; b1; b2; k2; b3; k3 ...]
+    then [keyword_partition keywords body] is [(k1,[b1,b2]);(k2,[b3]);... ]
+*)
+let keyword_partition keywords body = 
+  (** [keyword_partition_helper keywords body outcome] is list of tuples of 
+      [keywords] and its immediately content before in [body] until the 
+      previous keyword.
+      if [keywords] are [k1;k2;...] and [body] is [b3; k2; b2; b1; k1;]
+      then [keyword_partition_helper keywords body outcome] 
+      is [(k1,[b1,b2]);(k2,[b3]);... ]
+  *)
+  let rec keyword_partition_helper keywords body outcome = 
+    if List.filter (fun x -> List.mem x body) keywords = [] then outcome else
+      let (head, matched_key, tail) = list_partition keywords body in
+      keyword_partition_helper keywords tail ((matched_key,head)::outcome)
+  in
+  keyword_partition_helper keywords (List.rev body) [] 
+  |> List.map (fun (a,list) -> (a,List.rev list))
+
+
 (** [parse_columns str_list] returns column title out of [str_list]
     and [str_list] should contain exactly one column name
     Raise: [Empty] when [str_list] is empty
@@ -82,7 +104,7 @@ let parse_column str_list : column_object=  match str_list with
 let parse_columns str_list =  match str_list with
     [] -> raise Empty
   | ["*"] -> Wildcard
-  | list -> Columns (list |> String.concat " "|> String.split_on_char ',' )
+  | list -> Columns (list |> String.concat " " |> String.split_on_char ',' )
 
 let parse_bi_re str = match str with 
     ">" -> GT
@@ -128,17 +150,21 @@ let parse_table_name str_list : table_name = match str_list with
 
 (** [parse_select str_list] is the command from [str_list] 
     with command_verb being [Select]
-    Requires: [str_list] should be string list after the keyword "SELECT"
+    Requires: [str_list] should be string list inluding the keyword "SELECT"
 *)
 let parse_select str_list : command = 
-  match list_partition ["FROM"] str_list with
-    (before, _, after) -> 
-    if List.mem "WHERE" after 
-    then let (name, _ , expr) = list_partition ["WHERE"] after in
-      (Select (parse_columns before), 
-       [From (parse_table_name name); Where (parse_expr expr)], 
-       [])
-    else Select (parse_columns before), [From (parse_table_name after)], []
+  let assoc_list = 
+    keyword_partition ["SELECT";"FROM";"WHERE"; "ORDER";"BY"] str_list in
+  let after_select = List.assoc "SELECT" assoc_list in 
+  let after_from = List.assoc "FROM" assoc_list in
+  let subject = if List.assoc_opt "WHERE" assoc_list = None 
+    then [From (parse_table_name after_from)] 
+    else [From (parse_table_name after_from); 
+          Where (parse_expr (List.assoc "WHERE" assoc_list))]
+  in
+  let formatter = if List.assoc_opt "BY" assoc_list = None then [] 
+    else [OrderBy (parse_columns (List.assoc "BY" assoc_list))] in
+  Select (parse_columns after_select), subject, formatter
 
 (** No support for 
     - use of [']
@@ -151,10 +177,10 @@ let parse str : command=
   let command_list_raw = String.split_on_char ' ' str in 
   let command_list = List.filter (fun x -> x <> "") command_list_raw in 
   match command_list with 
-    "SELECT"::t -> parse_select t
-  | "INSERT"::t -> failwith("Unimplemented")
-  | "UPDATE"::t -> failwith("Unimplemented")
-  | "DELETE"::t -> failwith("Unimplemented")
+    "SELECT"::_ -> parse_select command_list
+  | "INSERT"::_ -> failwith("Unimplemented")
+  | "UPDATE"::_ -> failwith("Unimplemented")
+  | "DELETE"::_ -> failwith("Unimplemented")
   | "Quit"::_ -> (Quit, [], [])
   | _ -> raise Malformed
 

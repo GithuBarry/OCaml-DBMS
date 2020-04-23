@@ -60,7 +60,6 @@ type command_subject =
     needs some formatting *)
 type command_formatter = 
   | OrderBy of column_objects
-  | Distinct
 
 (** The type [command] represents a user command, It is decomposed
     into a [command_verb], non-empty [command_subject] list and an optional 
