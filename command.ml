@@ -134,7 +134,7 @@ let parse_select str_list : command =
   match list_partition ["FROM"] str_list with
     (before, _, after) -> 
     if List.mem "WHERE" after 
-    then let (name, _ , expr) = list_partition ["WHERE"] str_list in
+    then let (name, _ , expr) = list_partition ["WHERE"] after in
       (Select (parse_columns before), 
        [From (parse_table_name name); Where (parse_expr expr)], 
        [])
