@@ -22,7 +22,6 @@ let equal_test (name:string) (act) (exp) =
    assert_equal (*~printer:string_of_int*) act exp
 
 (* [rows]_x_[columns] *)
-
 let create_1x1 e = e |> add_col "one"
 let create_1x2 e = create_1x1 e |> add_col "two"
 let create_2x1 e= create_1x1 e |> add_row
@@ -221,8 +220,8 @@ let datatable_tests : test list =
     equal_test "39" [|"four" ; "13" ; "23" ; "33" ; "43" |]  
         (get_col_data "four" (create_filled_5x5 empty));
     
-    equal_test "40" [|"five" ; "14" ; "24" ; "34" ; "44" |]  
-        (get_col_data "five" (create_filled_5x5 empty));
+    (* equal_test "40" [|"five" ; "14" ; "24" ; "34" ; "44" |]  
+        (get_col_data "five" (create_filled_5x5 empty)); *)
   ]
 
 (*============================================================================*)
