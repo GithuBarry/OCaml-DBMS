@@ -1,9 +1,12 @@
 
+(** [all_csv_files dir] is all csvs [filename] in [dir]. *)
 val all_csv_files : string -> string list
 
-(* [csv_array filename] is a string array array representation of [filename] *)
+(** [csv_array filename] is a string array array representation of [filename] *)
 val csv_array : string -> string array array
 
+(** [save filename data] saves [data] to [filename]. *)
 val save : string -> string array array -> unit
 
-val csvs_in_hashtbl: string -> (string, string array array) Hashtbl.t -> unit
+(** [csv_array dir database] saves all csvs in [dir] to [database] *)
+val csvs_in_hastbl: string -> (string, string array array) Hashtbl.t -> unit

@@ -15,6 +15,8 @@ val num_cols : t -> int
 (** [num_cols tbl] is the number of rows in [tbl]*)
 val num_rows: t -> int
 
+val get_cols: t -> string array
+
 (** [contains_col tbl s] is [true] if [tbl] contains a column with header named 
     [s]
     Requires: The first row of [tbl] contains the headers.*)
@@ -28,7 +30,7 @@ val add_col : string -> t -> t
 (** [del_col s tbl] is [tbl] without the column with header named [s].
     Requires: [tbl] contains a column named [s] 
     Raises: [Invalid_Argument] if [tbl] does not contains a column named [s] *)
-val del_col : string -> t -> t
+val del_col : string -> t -> unit
 
 (** [add_row tbl] is [tbl] with an empty row added. 
     Requires: [tbl] is not empty
@@ -49,8 +51,8 @@ val change_cell : int -> int -> string -> t -> t
 (** [get_col_data tbl s] is the data stored in [tbl] in the column named [s]
     Requires: [tbl] contains a column named [s] 
     Raises: [Invalid_Argument] if [tbl] does not contains a column named [s] *)
-val get_col_data : string -> t ->  string array
+val get_cols_data : string list -> t ->  string array array
 
 (* (** [get_col_data_opt tbl s] is the Some data stored in [tbl] in the column 
     named [s], or None if [tbl] does not contain a column named [s] *)
-val get_col_data : string -> t ->  string array *)
+   val get_col_data : string -> t ->  string array *)

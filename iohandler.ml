@@ -2,6 +2,9 @@ open Csv
 open Hashtbl
 open Sys
 
+let rmv_csv_tl (s:string) = String.sub s 0 (String.length s -4)
+
+
 let is_csv (s:string) : bool =
   let len = String.length s in
   if len < 4 then false
@@ -9,7 +12,8 @@ let is_csv (s:string) : bool =
 
 let all_csv_files cur_directory = 
   let all_files = cur_directory|>Sys.readdir|>Array.to_list in
-  List.fold_left (fun x e -> if is_csv e then e::x else x) [] all_files
+  List.fold_left 
+    (fun x e -> if is_csv e then e::x else x) [] all_files
 
 (* [csv_array filename] is a string array array representation of [filename] *)
 let csv_array filename = let csv_read = Csv.load filename in

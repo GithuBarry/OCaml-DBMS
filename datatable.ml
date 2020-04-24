@@ -14,12 +14,14 @@ let num_cols tbl = Array.length tbl.(0)
 
 let num_rows tbl = Array.length tbl
 
+let get_cols tbl = tbl.(0)
+
 let contains_col tbl s = Array.mem s tbl.(0)
 
 let add_col s tbl =
-if is_empty tbl then [| [| s |] |] else
-if contains_col tbl s then raise (Invalid_argument "Duplicate Column Name")
-else
+  if is_empty tbl then [| [| s |] |] else
+  if contains_col tbl s then raise (Invalid_argument "Duplicate Column Name")
+  else
     let append idx row = tbl.(idx) <- Array.append row [| "" |] in
     Array.iteri append tbl;
     tbl.(0).(num_cols tbl - 1) <- s;
@@ -47,14 +49,15 @@ let remove_index i array =
     Array.append new_row1 new_row2
 
 let del_col s tbl =
-  if is_empty tbl then tbl
+  if is_empty tbl then ()
   else if not (contains_col tbl s) then
     raise (Invalid_argument "Specified Column doesn't exist")
-  else if num_cols tbl = 1 then empty
+  else if num_cols tbl = 1 then ()
   else
     let index_to_del = find_index s tbl.(0) in
-    Array.map (remove_index index_to_del) tbl
-    
+    ignore(Array.map (remove_index index_to_del) tbl); 
+    ()
+
 let add_row tbl =
   if is_empty tbl then raise (Invalid_argument "Can't add row to empty table")
   else Array.append tbl (Array.make_matrix 1 (num_cols tbl) "")
@@ -67,17 +70,21 @@ let change_cell i j value tbl=
   if i < 0 || i > (num_rows tbl - 1) || j < 0 || j > (num_cols tbl - 1)
   then raise (Invalid_argument "index out of bounds") else
   if i = 0 then raise (Invalid_argument "Can't modify column names") else
-  tbl.(i).(j) <- value;
+    tbl.(i).(j) <- value;
   tbl
 
-let get_col_data s tbl =
-  let index_to_get = find_index s tbl.(0) in
-  if index_to_get = -1 then
+(* let get_col_data s tbl =
+   let index_to_get = find_index s tbl.(0) in
+   if index_to_get = -1 then
     raise (Invalid_argument "Specified Column doesn't exist")
-  else
+   else
     let res = Array.make (num_rows tbl) "" in
-    Array.iteri (fun idx lst -> res.(idx) <- lst.(index_to_get)) tbl;
+    Array.iteri (fun idx lst -> res.(idx) <- lst.(index_to_get)) tbl; *)
 
-    (*Include this line to exclude name of column*)
-    (*remove_index 0 res *)
-    res
+let get_cols_data (c_list:string list) (tbl:string array array) =
+  let tbl_copy = Array.copy tbl in
+  let cols = Array.to_list (get_cols tbl_copy) in
+  let del_lst = List.filter (fun e -> not (List.mem e c_list)) cols in
+  List.iter (fun s -> del_col s tbl_copy) del_lst;
+  tbl_copy
+

@@ -14,3 +14,6 @@ build:
 
 test:
 	$(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST)
+
+run:
+	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)

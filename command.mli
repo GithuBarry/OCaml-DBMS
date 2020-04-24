@@ -17,7 +17,9 @@ type bi_re =
 type column_object = string
 
 (** The type [column_objects] represents column name(s) *)
-type column_objects = column_object list
+type column_objects = 
+    Wildcard
+  | Columns of column_object list
 
 (** The type [element_phrases] represents a distinct table name
     accross different files *)
