@@ -21,7 +21,7 @@ let print_2D_array (array:string array array) =
 *)
 let get_table_name command_subject_lst = 
   match command_subject_lst with 
-  | (From table_name) :: tail -> table_name
+  | (From table_name) :: tail -> String.concat "." [table_name;"csv"]
   | _-> raise Malformed
 
 let database = Hashtbl.create 100 
@@ -37,7 +37,7 @@ let rec rep_loop () : unit=
       let table_name = get_table_name command_subject_lst in
       begin
         match column_objects with
-        | Wildcard -> 
+        | Wildcard ->
           (Hashtbl.find database table_name)|> print_2D_array;rep_loop () 
         | Columns cols -> 
           table_name|> Hashtbl.find database|> get_cols_data cols
