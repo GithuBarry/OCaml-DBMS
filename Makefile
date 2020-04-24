@@ -17,3 +17,6 @@ test:
 
 run:
 	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
+
+zip:
+	zip database.zip *.ml* *.txt *.csv _tags Makefile
