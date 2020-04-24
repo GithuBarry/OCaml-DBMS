@@ -114,7 +114,7 @@ let datatable_tests : test list =
                         [| ""  ; ""   ; ""     ;  ""   ;  ""   |]  |] (create_5x5 empty);
 
     (*Testing that del_col is functioning as intended. Also a few del_row tests*)    
-    equal_test "15" empty (del_col "one" (create_1x1 empty));
+    (* equal_test "15" empty (del_col "one" (create_1x1 empty));
 
        (* equal_test "16" [|[|"one"|]|] (del_col "wrong name" (create_1x1 empty)); *)
 
@@ -144,7 +144,7 @@ let datatable_tests : test list =
 
     equal_test "25" [|  [|"one"; "two"|]; 
                     [| ""   ; ""  |]; 
-                    [| ""   ; ""  |]  |] (del_col "three" (create_3x3 empty));
+                    [| ""   ; ""  |]  |] (del_col "three" (create_3x3 empty)); *)
 
     equal_test "26" [|  [|"one"; "two"; "three"|]; 
                         [| ""  ; ""   ; ""     |]; |] (del_row 1 (create_3x3 empty));
@@ -207,19 +207,26 @@ let datatable_tests : test list =
                         [|"40"  ;"41"  ; "42"  ; "43" ; "44"  |];  |] 
       (create_filled_5x5 empty |> del_row 1 |> del_row 1);
 
-    (* Testing that get_col_data is working as intended
-       equal_test "36" [|"one" ; "10" ; "20" ; "30" ; "40" |]  
-        (get_col_data "one" (create_filled_5x5 empty));
+    (* Testing that get_cols_data is working as intended *)
+    equal_test "36" [|  [|"two"; "three"|]; 
+                        [| ""   ; ""    |]; 
+                        [| ""   ; ""    |]  |] (get_cols_data ["two";"three"] (create_3x3 empty));
 
-       equal_test "37" [|"two" ; "11" ; "21" ; "31" ; "41" |]  
-        (get_col_data "two" (create_filled_5x5 empty));
+    equal_test "37" [|  [|"one"; "three"|]; 
+                        [| ""   ; ""    |]; 
+                        [| ""   ; ""    |]  |] (get_cols_data ["one";"three"] (create_3x3 empty));
 
-       equal_test "38" [|"three" ; "12" ; "22" ; "32" ; "42" |]  
-        (get_col_data "three" (create_filled_5x5 empty));
+    equal_test "38" [|  [|"one"|]; 
+                        [| ""   |]; 
+                        [| ""   |]  |] (get_cols_data ["one"] (create_3x3 empty));
 
-       equal_test "39" [|"four" ; "13" ; "23" ; "33" ; "43" |]  
-        (get_col_data "four" (create_filled_5x5 empty));*)
+    equal_test "39" [|  [|"two"|]; 
+                        [| ""   |]; 
+                        [| ""   |]  |] (get_cols_data ["two"] (create_3x3 empty));
 
+    equal_test "40" [|  [|"three"|]; 
+                        [| ""   |]; 
+                        [| ""   |]  |] (get_cols_data ["three"] (create_3x3 empty));
   ]
 
 (*============================================================================*)

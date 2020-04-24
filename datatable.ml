@@ -48,8 +48,8 @@ let remove_index i array =
     let new_row2 = Array.sub array (i + 1) (Array.length array - (i + 1)) in
     Array.append new_row1 new_row2
 
-let del_col s tbl =
-  if is_empty tbl then empty
+let del_col s tbl = 
+  if is_empty tbl then raise (Invalid_argument "table is empty" )
   else if not (contains_col tbl s) then
     raise (Invalid_argument "Specified Column doesn't exist")
   else if num_cols tbl = 1 then empty
@@ -84,6 +84,9 @@ let get_cols_data (c_list:string list) (tbl:string array array) =
   let tbl_copy = Array.copy tbl in
   let cols = Array.to_list (get_cols tbl_copy) in
   let del_lst = List.filter (fun e -> not (List.mem e c_list)) cols in
-  List.iter (fun s -> ignore(del_col s tbl_copy); () ) del_lst;
-  tbl_copy
-
+  let rec iter lst (tbl_copy: string array array) =
+    match lst with
+    | [] -> tbl_copy
+    | hd::tl -> iter tl (del_col hd tbl_copy)
+  in 
+  iter del_lst tbl_copy
