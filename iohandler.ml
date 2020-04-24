@@ -10,7 +10,7 @@ let is_csv (s:string) : bool =
   if len < 4 then false
   else String.sub s (len-4) (4) = ".csv" 
 
-let all_csv_files cur_directory = 
+let all_csv_files cur_directory =
   let all_files = cur_directory|>Sys.readdir|>Array.to_list in
   List.fold_left 
     (fun x e -> if is_csv e then e::x else x) [] all_files
