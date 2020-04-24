@@ -30,7 +30,7 @@ val add_col : string -> t -> t
 (** [del_col s tbl] is [tbl] without the column with header named [s].
     Requires: [tbl] contains a column named [s] 
     Raises: [Invalid_Argument] if [tbl] does not contains a column named [s] *)
-val del_col : string -> t -> unit
+val del_col : string -> t -> t
 
 (** [add_row tbl] is [tbl] with an empty row added. 
     Requires: [tbl] is not empty

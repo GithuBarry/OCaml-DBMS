@@ -34,7 +34,7 @@ let find_index s row =
   else
     let rec idx row s acc =
       if row.(acc) = s then acc else idx row s (acc + 1)
-    in
+    in 
     idx row s 0
 
 (** [remove_index i array] is [array] without the element at index [i] 
@@ -49,14 +49,13 @@ let remove_index i array =
     Array.append new_row1 new_row2
 
 let del_col s tbl =
-  if is_empty tbl then ()
+  if is_empty tbl then empty
   else if not (contains_col tbl s) then
     raise (Invalid_argument "Specified Column doesn't exist")
-  else if num_cols tbl = 1 then ()
+  else if num_cols tbl = 1 then empty
   else
     let index_to_del = find_index s tbl.(0) in
-    ignore(Array.map (remove_index index_to_del) tbl); 
-    ()
+    Array.map (remove_index index_to_del) tbl
 
 let add_row tbl =
   if is_empty tbl then raise (Invalid_argument "Can't add row to empty table")
@@ -71,7 +70,7 @@ let change_cell i j value tbl=
   then raise (Invalid_argument "index out of bounds") else
   if i = 0 then raise (Invalid_argument "Can't modify column names") else
     tbl.(i).(j) <- value;
-  tbl
+    tbl
 
 (* let get_col_data s tbl =
    let index_to_get = find_index s tbl.(0) in
@@ -85,6 +84,6 @@ let get_cols_data (c_list:string list) (tbl:string array array) =
   let tbl_copy = Array.copy tbl in
   let cols = Array.to_list (get_cols tbl_copy) in
   let del_lst = List.filter (fun e -> not (List.mem e c_list)) cols in
-  List.iter (fun s -> del_col s tbl_copy) del_lst;
+  List.iter (fun s -> ignore(del_col s tbl_copy); () ) del_lst;
   tbl_copy
 

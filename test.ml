@@ -114,37 +114,37 @@ let datatable_tests : test list =
                         [| ""  ; ""   ; ""     ;  ""   ;  ""   |]  |] (create_5x5 empty);
 
     (*Testing that del_col is functioning as intended. Also a few del_row tests*)    
-    (* equal_test "15" empty (del_col "one" (create_1x1 empty));
+    equal_test "15" empty (del_col "one" (create_1x1 empty));
 
-       equal_test "16" [|[|"one"|]|] (del_col "wrong name" (create_1x1 empty));
+       (* equal_test "16" [|[|"one"|]|] (del_col "wrong name" (create_1x1 empty)); *)
 
-       equal_test "17" [|[|"two"|]|] (del_col "one" (create_1x2 empty));
+    equal_test "17" [|[|"two"|]|] (del_col "one" (create_1x2 empty));
 
-       equal_test "18" [|[|"one"|]|] (del_col "two" (create_1x2 empty));
+    equal_test "18" [|[|"one"|]|] (del_col "two" (create_1x2 empty));
 
-       equal_test "19" [|[|"one"|]|] (del_row 1 (create_2x1 empty));
+    equal_test "19" [|[|"one"|]|] (del_row 1 (create_2x1 empty));
 
-       equal_test "20" [|[|"one"; "two"|]|] (del_row 1 (create_2x2 empty));
+    equal_test "20" [|[|"one"; "two"|]|] (del_row 1 (create_2x2 empty));
 
-       equal_test "21" [|  [|"two" |]; 
-                        [| ""   |]; 
-                        [| ""   |]  |] (del_col "one" (create_3x2 empty));
+    equal_test "21" [|  [|"two" |]; 
+                    [| ""   |]; 
+                    [| ""   |]  |] (del_col "one" (create_3x2 empty));
 
-       equal_test "22" [|  [|"one" |]; 
-                        [| ""   |]; 
-                        [| ""   |]  |] (del_col "two" (create_3x2 empty));
+    equal_test "22" [|  [|"one" |]; 
+                    [| ""   |]; 
+                    [| ""   |]  |] (del_col "two" (create_3x2 empty));
 
-       equal_test "23" [|  [|"two"; "three"|]; 
-                        [| ""   ; ""    |]; 
-                        [| ""   ; ""    |]  |] (del_col "one" (create_3x3 empty));
+    equal_test "23" [|  [|"two"; "three"|]; 
+                    [| ""   ; ""    |]; 
+                    [| ""   ; ""    |]  |] (del_col "one" (create_3x3 empty));
 
-       equal_test "24" [|  [|"one"; "three"|]; 
-                        [| ""   ; ""    |]; 
-                        [| ""   ; ""    |]  |] (del_col "two" (create_3x3 empty));
+    equal_test "24" [|  [|"one"; "three"|]; 
+                    [| ""   ; ""    |]; 
+                    [| ""   ; ""    |]  |] (del_col "two" (create_3x3 empty));
 
-       equal_test "25" [|  [|"one"; "two"|]; 
-                        [| ""   ; ""  |]; 
-                        [| ""   ; ""  |]  |] (del_col "three" (create_3x3 empty)); *)
+    equal_test "25" [|  [|"one"; "two"|]; 
+                    [| ""   ; ""  |]; 
+                    [| ""   ; ""  |]  |] (del_col "three" (create_3x3 empty));
 
     equal_test "26" [|  [|"one"; "two"; "three"|]; 
                         [| ""  ; ""   ; ""     |]; |] (del_row 1 (create_3x3 empty));
