@@ -1,0 +1,6 @@
+1. Install CSV module with command:
+   opam install csv
+2. In the terminal, type:
+   make build
+2. In the terminal type:
+   make run
