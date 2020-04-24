@@ -32,7 +32,7 @@ let save fn array_csv = Csv.save fn (to_csv array_csv)
 let rec add_es_to_htbl tbl = function
   | [] -> ()
   | h::t -> 
-    (Hashtbl.add tbl h (csv_array h) );
+    (Hashtbl.add tbl (rmv_csv_tl h) (csv_array h) );
     add_es_to_htbl tbl t
 
 let csvs_in_hastbl dir tbl = 
