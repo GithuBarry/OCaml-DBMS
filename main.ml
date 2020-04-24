@@ -21,7 +21,7 @@ let print_2D_array (array:string array array) =
 *)
 let get_table_name command_subject_lst = 
   match command_subject_lst with 
-  | (From table_name) :: tail -> String.concat "." [table_name;"csv"]
+  | (From table_name) :: tail -> table_name
   | _-> raise Malformed
 
 let database = Hashtbl.create 100 
