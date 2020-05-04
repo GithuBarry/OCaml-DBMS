@@ -219,7 +219,7 @@ let parse str : command=
   | "INSERT"::_ -> failwith("Unimplemented")
   | "UPDATE"::_ -> parse_update command_list
   | "DELETE"::_ -> failwith("Unimplemented")
-  | "Quit"::_ -> (Quit, [], [])
+  | fst::_ when String.lowercase_ascii fst = "quit" -> (Quit, [], [])
   | _ -> raise Malformed
 
 
