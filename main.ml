@@ -68,7 +68,7 @@ let main () =
     match read_line () with 
     | str when String.trim str = ""-> 
       print_string " Please enter non empty command \n > "; get_database()
-    | str when Sys.is_directory str = false -> 
+    | str when Iohandler.is_dir str = false -> 
       print_string " Please enter valid directory \n > "; get_database()
     | dir -> Iohandler.csvs_in_hastbl dir database
   in
