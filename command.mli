@@ -61,7 +61,8 @@ type command_subject =
 (** The type [command_formatter] represents an identifer for whether the output
     needs some formatting *)
 type command_formatter = 
-  | OrderBy of column_objects
+  (* [bool] corrospoding [column_object] to is [true] when oder is [DESC]*)
+  | OrderBy of (column_object * bool) list
 
 (** The type [command] represents a user command, It is decomposed
     into a [command_verb], non-empty [command_subject] list and an optional 

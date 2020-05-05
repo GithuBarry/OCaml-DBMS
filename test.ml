@@ -336,13 +336,7 @@ let parser_tests : test list =
     tester "parse SELECT 2" (Select Wildcard, [From "X"], [])
       (parse "SELECT * FROM X");
 
-
-    tester "Parse SELECT 3" (Select Wildcard, 
-                             [From "table name"; Where (Expr ("column number", GT, "0"))],
-                             [OrderBy (Columns ["column number"])]) 
-      (parse "SELECT * FROM table name WHERE column number > 0 ORDER BY column number");
-
-    tester "parse SELECT 4: OR has high priority" 
+    tester "parse SELECT 3: OR has high priority" 
       (Select Wildcard, [From "medicine"; Where (
            Binary (OR,Binary 
                      (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
@@ -350,6 +344,14 @@ let parser_tests : test list =
        [])
       (parse "SELECT * FROM medicine WHERE status = valid AND medicine = valid OR emergency auth = true");
 
+    tester "parse SELECT 4" 
+      (Select Wildcard,
+       [From "table name"; Where (Binary (OR,
+                                          Binary (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
+                                          Binary (AND, Expr ("emergency auth", EQ, "true"),
+                                                  Expr ("is banned", EQ, "false"))))],
+       [OrderBy [("Date", true); ("No", false)]])
+      (parse "SELECT * FROM table name WHERE status = valid AND medicine = valid OR emergency auth = true AND is banned = false ORDER BY Date DESC, No ASC");
 
     tester "Parse UPDATE 1" (Update "table",
                              [Where (Expr ("age", GT, "21")); Set [("name", "adult"); ("drinking", "ok")]],

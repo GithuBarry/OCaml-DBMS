@@ -42,7 +42,8 @@ type command_subject =
   | Set of set_objects
 
 type command_formatter = 
-  | OrderBy of column_objects
+  (* [bool list] is [true] when oder is [DESC]*)
+  | OrderBy of (column_object * bool) list
 
 type command = command_verb * command_subject list 
                * command_formatter list
@@ -97,6 +98,23 @@ let keyword_partition keywords body =
 let parse_column str_list : column_object=  match str_list with
     [] -> raise Empty
   | list -> list |> String.concat " "
+
+(** [parse_orders str_list] is the tuple list with first element being the 
+    [column name] and second element indicating if [decreasing] *)
+let parse_orders str_list : (column_object * bool) list = match str_list with
+    [] -> raise Empty
+  | list -> 
+    list |> String.concat " " 
+    |> String.split_on_char ',' 
+    |> List.map String.trim |>  
+    List.map (fun x -> 
+        if String.length x < 5 
+        then (x,false) 
+        else if String.sub x ((String.length x)- 3) 3 = "ASC" 
+        then (String.sub x 0 (String.length x - 4),false) 
+        else if String.sub x ((String.length x)- 4) 4 = "DESC" 
+        then (String.sub x 0 (String.length x - 5),true) 
+        else (x,false))
 
 (** [parse_columns str_list] returns column title(s) out of [str_list]
     Raise: [Empty] when [str_list] is empty
@@ -187,7 +205,7 @@ let parse_select str_list : command =
           Where (parse_expr (List.assoc "WHERE" assoc_list))]
   in
   let formatter = if List.assoc_opt "BY" assoc_list = None then [] 
-    else [OrderBy (parse_columns (List.assoc "BY" assoc_list))] in
+    else [OrderBy (parse_orders (List.assoc "BY" assoc_list))] in
   Select (parse_columns after_select), subject, formatter
 
 (** [parse_set str_list] returns [set_objects] which [str_list] represents*)
