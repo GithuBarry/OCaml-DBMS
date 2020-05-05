@@ -26,18 +26,18 @@ type column_objects =
 type table_name = string
 
 (** The type [value_object] represents a basic unit of table value*)
-type value_objects = string
+type value_object = string
 
 (** The type [value_object] represents a list of assignment for 
-    [column_objects] = [value_objects]*)
-type set_objects = (column_object * value_objects) list
+    [column_objects] = [value_object]*)
+type set_objects = (column_object * value_object) list
 
 (** The type [expr_objects] represents a value of boolean or table data
     when representing a boolean, it should be [column_name operator value]
     as separate elements
     An [expr_objects] is not permitted to be the empty list. *)
 type expr_objects = 
-    Expr of column_object * bi_re * value_objects
+    Expr of column_object * bi_re * value_object
   | Binary of bi_op * expr_objects * expr_objects 
 
 
@@ -55,7 +55,7 @@ type command_verb =
 type command_subject =   
   | From of table_name
   | Where of expr_objects
-  | Values of value_objects
+  | Values of value_object list
   | Set of set_objects
 
 (** The type [command_formatter] represents an identifer for whether the output

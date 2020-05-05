@@ -20,12 +20,12 @@ type column_objects =
 
 type table_name = string
 
-type value_objects = string
+type value_object = string
 
-type set_objects = (column_object * value_objects) list
+type set_objects = (column_object * value_object) list
 
 type expr_objects = 
-    Expr of column_object * bi_re * value_objects
+    Expr of column_object * bi_re * value_object
   | Binary of bi_op * expr_objects * expr_objects 
 
 type command_verb = 
@@ -38,7 +38,7 @@ type command_verb =
 type command_subject =   
   | From of table_name
   | Where of expr_objects
-  | Values of value_objects
+  | Values of value_object list
   | Set of set_objects
 
 type command_formatter = 
@@ -108,6 +108,8 @@ let parse_columns str_list =  match str_list with
                      |> String.split_on_char ',' 
                      |> List.map String.trim)
 
+
+
 (** [parse_bi_re str] returns a [bi_re] corrosponding tp [str]
     Raise: Failure when [str] is illeagal*)
 let parse_bi_re str = match str with 
@@ -125,25 +127,39 @@ let parse_bi_op str = match str with
   | "OR" -> OR
   | _ -> failwith("Internal Error: Illeagal Operator")
 
-(** [parse_value str_list] returns a [valur_object]
+(** [parse_value str_list] returns a [value_object]
     Raise: Empty when [str_list] is empty *)
 let parse_value str_list =  match str_list with
     [] -> raise Empty
   | list -> list |> String.concat " "
 
+(** [parse_values str_list] returns values out of [str_list]
+    Raise: [Empty] when [str_list] is empty
+*)
+let parse_values str_list =  match str_list with
+    [] -> raise Empty
+  | list -> Values (list |> String.concat " " 
+                    |> String.split_on_char ',' 
+                    |> List.map String.trim)
+
 (** [parse_expr str_list] returns a where [command_subject] out of [str_list]
+    [OR] is always processed before [AND] as [AND] has higher priority
     Requires: str_list not to include "WHERE"
     Raise: [Empty] when [str_list] is empty
     Raise: [Malformed] when [str_list] cannot be parsed to a where object
 *)
 let rec parse_expr str_list = 
-  let (before, re, after) = list_partition [">";"=";"<";">=";"<="] str_list in
-  if (List.mem "AND" after)|| (List.mem "OR" after) then 
-    let (this, bi_op, next) = list_partition ["AND";"OR"] after in
-    Binary (parse_bi_op bi_op, 
-            Expr (parse_column before, parse_bi_re re, parse_value this),
-            parse_expr next)
-  else Expr (parse_column before, parse_bi_re re, parse_value after)
+  if  (List.mem "OR" str_list) then 
+    let (before, bi_op, after) = list_partition ["OR"] str_list 
+    in
+    Binary (parse_bi_op bi_op, parse_expr before, parse_expr after)
+  else if (List.mem "AND" str_list) then 
+    let (before, bi_op, after) = list_partition ["AND"] str_list 
+    in
+    Binary (parse_bi_op bi_op, parse_expr before, parse_expr after)
+  else let (before, re, after) = list_partition [">";"=";"<";">=";"<="] str_list 
+    in
+    Expr (parse_column before, parse_bi_re re, parse_value after)
 
 
 (** [parse_table_name str_list] returns a [table_name] out of [str_list]
@@ -188,7 +204,7 @@ let parse_set str_list : set_objects =
 
 (** [parse_select str_list] is the command from [str_list] 
     with command_verb being [Parse]
-    Requires: [str_list] should be string list inluding the keyword "PARSE"
+    Requires: [str_list] should be string list inluding the keyword "UPDATE"
 *)
 let parse_update str_list : command = 
   let assoc_list = keyword_partition ["UPDATE";"SET";"WHERE"] str_list in
@@ -201,6 +217,61 @@ let parse_update str_list : command =
           Set (parse_set after_set)]
   in
   Update (parse_table_name after_update), subject, []
+
+(** [remove_all str_lst char_list] is the [str_lst] without any char present in 
+    [char_list]
+*)
+let rec remove_all char_list str_lst: string list = match char_list with 
+  | [] -> str_lst
+  | h::t -> remove_all t 
+              (str_lst|> List.map (fun x -> String.split_on_char h x
+                                            |> String.concat ""))
+
+(** [rmem_from_all str_lst char] is [Some string] where [string] is the 
+    first string with [char] in the list, and [None] if does not exist
+*)
+let find_from_all char str_lst: string option =
+  match List.filter (fun x -> String.contains x char) str_lst with
+    h::t -> Some h
+  | _ -> None
+
+(** [parse_select str_list] is the command from [str_list] 
+    with command_verb being [INSERT INTO]
+    Requires: [str_list] should be string list inluding the keyword "INSERT"
+*)
+let parse_insert str_list : command = 
+  let assoc_list = keyword_partition ["INTO";"VALUES"] str_list in
+  let after_insert = List.assoc "INTO" assoc_list in 
+  let after_values = List.assoc "VALUES" assoc_list in
+  let first_parenthesis = List.assoc "INTO" assoc_list |> find_from_all '(' in
+  let table_name =  match first_parenthesis with 
+      None -> after_insert 
+    | Some first -> let (a, _ ,_ ) = list_partition [first] after_insert in a 
+  in 
+  let cols_opt = match first_parenthesis with 
+      None -> None 
+    | Some first -> let (_, b ,c) = list_partition [first] after_insert in 
+      Some (b::c |> remove_all ['(';')'] |> parse_columns)
+  in
+  InsertInto (parse_table_name table_name, cols_opt), 
+  [parse_values (remove_all ['(';')'] after_values)] ,[]
+
+
+(** [parse_delete str_list] is the command from [str_list] 
+    with command_verb being [DELETE]
+    Requires: [str_list] should be string list inluding the keyword "DELETE"
+*)
+let parse_delete str_list : command = 
+  let assoc_list = 
+    keyword_partition ["DELETE";"FROM";"WHERE"] str_list in
+  let after_from = List.assoc "FROM" assoc_list in 
+  let subjects = if List.mem_assoc "WHERE" assoc_list
+    then [From (parse_table_name after_from); 
+          Where (parse_expr (List.assoc "WHERE" assoc_list))] 
+    else [From (parse_table_name after_from)]
+  in
+  Delete, subjects, []
+
 
 (** No support for 
     - use of [']
@@ -216,9 +287,9 @@ let parse str : command=
   let command_list = List.filter (fun x -> x <> "") command_list_raw in 
   match command_list with 
     "SELECT"::_ -> parse_select command_list
-  | "INSERT"::_ -> failwith("Unimplemented")
+  | "INSERT"::_ -> parse_insert command_list
   | "UPDATE"::_ -> parse_update command_list
-  | "DELETE"::_ -> failwith("Unimplemented")
+  | "DELETE"::_ -> parse_delete command_list
   | fst::_ when String.lowercase_ascii fst = "quit" -> (Quit, [], [])
   | _ -> raise Malformed
 
