@@ -52,4 +52,10 @@ val change_cell : int -> int -> string -> t -> t
     are listed in [s]
     Requires: [tbl] contains all columns named in [s] 
     Raises: [Invalid_Argument] if [tbl] does not contains a column named in [s] *)
-val get_cols_data : string list -> t ->  string array array
+val get_cols_data : string list -> t ->  t
+
+(** [where conds tbl] is the rows in [tbl] that satisfy the conditions given in
+    [conds]
+    Requires: [tbl] contains all columns referenced in [conds] 
+    Raises: [Invalid_Argument] if [tbl] does not contains a column named in [conds] *)
+val where : Command.expr_objects -> t -> t

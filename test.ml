@@ -1,6 +1,18 @@
 open OUnit2
 open Csv
 open Datatable
+open Command
+
+(** [print_array array] prints every element in [array]*)
+let print_array array =
+  Array.iter print_string array
+
+(** [print_2D_array array] prints [array]  in a matrix format*)
+let print_2D_array (array:string array array) = 
+  let (acc:string ref) = ref "" in 
+  array |> Array.iter (fun x -> 
+      Array.iter (fun x ->  acc:= !acc^x; acc:=!acc^"  ") x; 
+      acc:= !acc^"/n"); !acc
 
 (** Tests that [file] has the expected number of [lines] *)
 let num_lines_test (name:string) (file:string) (lines:int)= 
@@ -19,7 +31,19 @@ let example_tests : test list =
 
 let equal_test (name:string) (act) (exp) = 
   name >:: fun _ -> 
-    assert_equal (*~printer:string_of_int*) act exp
+    assert_equal ~printer: print_2D_array act exp
+
+let sampleCSV = empty |> add_col "Name" |> add_col "Age" |> add_col "Loc" 
+                      |> add_row |> add_row |> add_row
+                      |> change_cell 1 0 "Leo" 
+                      |> change_cell 1 1 "24" 
+                      |> change_cell 1 2 "USA"
+                      |> change_cell 2 0 "Thomas" 
+                      |> change_cell 2 1 "20"  
+                      |> change_cell 2 2 "USA" 
+                      |> change_cell 3 0 "Barry" 
+                      |> change_cell 3 1 "20"
+                      |> change_cell 3 2 "CHN"    
 
 (* [rows]_x_[columns] *)
 let create_1x1 e = e |> add_col "one"
@@ -35,7 +59,8 @@ let create_4x4 e= create_3x4 e |> add_row
 let create_4x5 e= create_4x4 e|> add_col "five"
 let create_5x4 e= create_4x4 e|> add_row
 let create_5x5 e= create_5x4 e |> add_col "five"
-let create_filled_5x5 e = create_5x5 empty |> change_cell 1 0 "10" 
+let create_filled_5x5 e = create_5x5 empty 
+                          |> change_cell 1 0 "10" 
                           |> change_cell 1 1 "11" 
                           |> change_cell 1 2 "12" 
                           |> change_cell 1 3 "13" 
@@ -114,7 +139,7 @@ let datatable_tests : test list =
                         [| ""  ; ""   ; ""     ;  ""   ;  ""   |]  |] (create_5x5 empty);
 
     (*Testing that del_col is functioning as intended. Also a few del_row tests*)    
-    (* equal_test "15" empty (del_col "one" (create_1x1 empty));
+    equal_test "15" empty (del_col "one" (create_1x1 empty));
 
        (* equal_test "16" [|[|"one"|]|] (del_col "wrong name" (create_1x1 empty)); *)
 
@@ -144,7 +169,7 @@ let datatable_tests : test list =
 
     equal_test "25" [|  [|"one"; "two"|]; 
                     [| ""   ; ""  |]; 
-                    [| ""   ; ""  |]  |] (del_col "three" (create_3x3 empty)); *)
+                    [| ""   ; ""  |]  |] (del_col "three" (create_3x3 empty));
 
     equal_test "26" [|  [|"one"; "two"; "three"|]; 
                         [| ""  ; ""   ; ""     |]; |] (del_row 1 (create_3x3 empty));
@@ -227,6 +252,54 @@ let datatable_tests : test list =
     equal_test "40" [|  [|"three"|]; 
                         [| ""   |]; 
                         [| ""   |]  |] (get_cols_data ["three"] (create_3x3 empty));
+
+    (*Testing the function where is woking as intended*) 
+    equal_test "41" [|  [|"Name"  ; "Age"; "Loc"|]; 
+                        [|"Leo"   ; "24" ; "USA"|]; 
+                        [|"Thomas"; "20" ; "USA"|]; 
+                        [|"Barry" ; "20" ; "CHN"|]  |] (sampleCSV);
+
+    equal_test "42" [| [|"Thomas"; "20" ; "USA"|]; |] 
+      (where (Expr ("Name", EQ, "Thomas")) sampleCSV );
+
+    equal_test "43" [|  [|"Leo"   ; "24" ; "USA"|]; 
+                        [|"Thomas"; "20" ; "USA"|]; 
+                        [|"Barry" ; "20" ; "CHN"|]  |] 
+      (where (Expr ("Age", GT, "-5")) sampleCSV );
+
+    equal_test "44" [|  [|"Leo"   ; "24" ; "USA"|];  |] 
+      (where (Expr ("Age", GT, "20")) sampleCSV );
+
+    equal_test "45" [|  [|"Thomas"; "20" ; "USA"|]; 
+                        [|"Barry" ; "20" ; "CHN"|]  |] 
+      (where (Expr ("Age", LT, "24")) sampleCSV );
+ 
+ 
+    equal_test "46" [| [|"Thomas"; "20" ; "USA"|]; |] 
+      (where (Binary (AND, Expr ("Age", EQ, "20"), Expr ("Loc", EQ, "USA"))) sampleCSV );
+
+    equal_test "47" [|  [|"Leo"   ; "24" ; "USA"|]; 
+                        [|"Barry" ; "20" ; "CHN"|]  |] 
+      (where (Binary (OR, Expr ("Age", GT, "21"),
+        (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
+          sampleCSV );
+          
+    equal_test "48" [| |] 
+      (where (Binary (AND, Expr ("Name", EQ, "Thomas"),
+        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+          sampleCSV );
+
+    equal_test "49"  [| [|"Thomas"; "20" ; "USA"|]; |] 
+      (where (Binary (OR, Expr ("Name", EQ, "Thomas"),
+        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+          sampleCSV );
+
+    equal_test "50"  [| [|"10"  ;"11"  ; "12"  ; "13" ; "14"  |];  
+                        [|"30"  ;"31"  ; "32"  ; "33" ; "34"  |]; 
+                        [|"40"  ;"41"  ; "42"  ; "43" ; "44"  |];  |] 
+      (where (Binary (OR, Expr ("one", GTEQ, "30"),
+        (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
+          (create_filled_5x5 empty) );
   ]
 
 (*============================================================================*)
