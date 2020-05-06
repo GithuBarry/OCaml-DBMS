@@ -24,7 +24,9 @@ let get_table_name command_subject_lst =
   | (From table_name) :: tail -> table_name
   | _-> raise Malformed
 
-let database = Hashtbl.create 100 
+let database = Hashtbl.create 100
+(** [directory_files] stores directory that files are from*)
+let directory_files = ref "." 
 
 let rec rep_loop () : unit=
   print_string "\n\n Enter command: \n\n > ";
