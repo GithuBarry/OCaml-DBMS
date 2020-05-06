@@ -7,6 +7,8 @@ open Command
     unique names. *)
 type t = string array array
 
+type filter = bool array
+
 let empty = Array.make_matrix 0 0 ""
 
 let is_empty tbl = Array.length tbl = 0
@@ -90,13 +92,13 @@ let get_cols_data (c_list:string list) (tbl:string array array) =
 let union_array array_1 array_2 =
   let rec union a1 a2 len res i =
     if i = len then res
-    else if a1.(i) = 1 || a2.(i) = 1 then (
-      res.(i) <- 1;
+    else if a1.(i) = true || a2.(i) = true then (
+      res.(i) <- true;
       union a1 a2 len res (i + 1) )
     else union a1 a2 len res (i + 1)
   in
   let len = Array.length array_1 in
-  union array_1 array_2 len (Array.make len 0) 0
+  union array_1 array_2 len (Array.make len false) 0
 
 
 (** [union_array array_1 array_2] is a new array that has a 1 in every index 
@@ -105,14 +107,13 @@ let union_array array_1 array_2 =
 let intersect_array array_1 array_2 =
   let rec intersect a1 a2 len res i =
     if i = len then res
-    else if a1.(i) = 1 && a2.(i) = 1 then (
-      res.(i) <- 1;
+    else if a1.(i) = true && a2.(i) = true then (
+      res.(i) <- true;
       intersect a1 a2 len res (i + 1) )
     else intersect a1 a2 len res (i + 1)
   in
-
   let len = Array.length array_1 in
-  intersect array_1 array_2 len (Array.make len 0) 0
+  intersect array_1 array_2 len (Array.make len false) 0
 
 (** [filter_table tbl col_num comp obj res_array] modifies [res_array] in place,
     so that each of its indices which correspond to a row in [tbl] that 
@@ -121,7 +122,7 @@ let intersect_array array_1 array_2 =
 let filter_table tbl col_num comp obj res_array =
   let check_row col_num obj res_array comp conv index row =
     if index <> 0 && comp (conv row.(col_num)) (conv obj) then
-      res_array.(index) <- 1
+      res_array.(index) <- true
     else ()
   in
   match comp with
@@ -133,33 +134,45 @@ let filter_table tbl col_num comp obj res_array =
   | LTEQ -> Array.iteri (check_row col_num obj res_array ( <= ) int_of_string) tbl
 
 (** [del_rows rows_to_keep len tbl] is [tbl], which originally had length [len], 
-    with every index corresponding to a 0 in [rows_to_keep] removed. For 
-    example, if only the first and last indices of [rows_to_keep] were 0, then 
-    [del_rows rows_to_keep len tbl] would be [tbl] without its first or last 
-    elements.*)
+    with every index corresponding to true in [rows_to_del] removed. For 
+    example, if only the first and last indices of [rows_to_keep] were true, 
+    then [del_rows rows_to_keep len tbl] would be [tbl] without its first or 
+    last elements.*)
 let del_rows rows_to_keep len tbl =
   let rec del_rows rows_to_keep row_num tbl i =
     if i < 0 then tbl
-    else if rows_to_keep.(i) = 0 then
+    else if rows_to_keep.(i) = true then
       del_rows rows_to_keep row_num (remove_index i tbl) (i - 1)
     else del_rows rows_to_keep row_num tbl (i - 1)
   in
   del_rows rows_to_keep len tbl (len - 1)
 
-let where (conds : Command.expr_objects) (tbl : string array array) :
-    string array array =
-  let rec build_row_list conds tbl =
+let rec where (conds : Command.expr_objects) (tbl : string array array) :
+    bool array =
     match conds with
     | Binary (AND, expr1, expr2) ->
-        intersect_array (build_row_list expr1 tbl) (build_row_list expr2 tbl)
+        intersect_array (where expr1 tbl) (where expr2 tbl)
     | Binary (OR, expr1, expr2) ->
-        union_array (build_row_list expr1 tbl) (build_row_list expr2 tbl)
+        union_array (where expr1 tbl) (where expr2 tbl)
     | Expr (col, comp, obj) -> 
       let col_num = find_index col tbl.(0) in
       let row_num = num_rows tbl in
-      let rows_to_keep = Array.make row_num 0 in
+      let rows_to_keep = Array.make row_num (false) in
       filter_table tbl col_num comp obj rows_to_keep;
       rows_to_keep
-  in
-  let rows_to_keep = build_row_list conds tbl in
-  del_rows rows_to_keep (num_rows tbl) tbl
+
+let select filter tbl = 
+  let inv_filter = Array.map (fun b -> not b) filter in
+  del_rows inv_filter (num_rows tbl) tbl 
+
+let delete filter tbl =
+  del_rows filter (num_rows tbl) tbl 
+
+let update filter set_objects tbl = 
+  failwith "unimplemented"
+
+let insert value_object_lst column_objects_opt tbl =
+  failwith "unimplemented"
+
+let order_by column_object_bool_lst tbl =
+  failwith "unimplemented, may change spec" 
