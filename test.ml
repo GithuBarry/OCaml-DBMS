@@ -2,6 +2,7 @@ open OUnit2
 open Csv
 open Datatable
 open Command
+open Iohandler
 
 (** [print_array array] prints every element in [array]*)
 let print_array array =
@@ -286,25 +287,25 @@ let datatable_tests : test list =
     equal_test "47" [|  [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (select (where (Binary (OR, Expr ("Age", GT, "21"),
-                      (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
-         sampleCSV ) sampleCSV);
+                              (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
+                 sampleCSV ) sampleCSV);
 
     equal_test "48" [| |] 
       (select (where (Binary (AND, Expr ("Name", EQ, "Thomas"),
-                      (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
-         sampleCSV ) sampleCSV);
+                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+                 sampleCSV ) sampleCSV);
 
     equal_test "49"  [| [|"Thomas"; "20" ; "USA"|]; |] 
       (select (where (Binary (OR, Expr ("Name", EQ, "Thomas"),
-                      (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
-         sampleCSV ) sampleCSV);
+                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+                 sampleCSV ) sampleCSV);
 
     equal_test "50"  [| [|"10"  ;"11"  ; "12"  ; "13" ; "14"  |];  
                         [|"30"  ;"31"  ; "32"  ; "33" ; "34"  |]; 
                         [|"40"  ;"41"  ; "42"  ; "43" ; "44"  |];  |] 
       (select(where (Binary (OR, Expr ("one", GTEQ, "30"),
-                      (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
-         (create_filled_5x5 empty) ) (create_filled_5x5 empty));
+                             (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
+                (create_filled_5x5 empty) ) (create_filled_5x5 empty));
   ]
 
 let parser_tests : test list =  
@@ -363,12 +364,18 @@ let parser_tests : test list =
                              []) (parse "UPDATE table SET name = adult, drinking = ok WHERE age > 21 AND status = active");
   ]
 
+let iohandler_test = [
+  tester "testing list_of_dir" ["./leo";"./examples"] (Iohandler.list_of_dir "  ./leo   ,  ./examples");
+  tester "testing list_of_dir" [""] (Iohandler.list_of_dir "");
+  tester "testing list_of_dir" ["./leo"] (Iohandler.list_of_dir " ./leo ");
+
+]
 
 (*============================================================================*)
 (*============================================================================*)
 
 let suite =
   "test suite for A2"
-  >::: List.flatten [ example_tests; datatable_tests; parser_tests]
+  >::: List.flatten [ example_tests; datatable_tests; parser_tests; iohandler_test]
 
 let _ = run_test_tt_main suite
