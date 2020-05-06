@@ -133,20 +133,6 @@ let filter_table tbl col_num comp obj res_array =
       Array.iteri (check_row col_num obj res_array ( >= ) int_of_string) tbl
   | LTEQ -> Array.iteri (check_row col_num obj res_array ( <= ) int_of_string) tbl
 
-(** [del_rows rows_to_keep len tbl] is [tbl], which originally had length [len], 
-    with every index corresponding to true in [rows_to_del] removed. For 
-    example, if only the first and last indices of [rows_to_keep] were true, 
-    then [del_rows rows_to_keep len tbl] would be [tbl] without its first or 
-    last elements.*)
-let del_rows rows_to_keep len tbl =
-  let rec del_rows rows_to_keep row_num tbl i =
-    if i < 0 then tbl
-    else if rows_to_keep.(i) = true then
-      del_rows rows_to_keep row_num (remove_index i tbl) (i - 1)
-    else del_rows rows_to_keep row_num tbl (i - 1)
-  in
-  del_rows rows_to_keep len tbl (len - 1)
-
 let rec where (conds : Command.expr_objects) (tbl : string array array) :
     bool array =
     match conds with
@@ -160,6 +146,20 @@ let rec where (conds : Command.expr_objects) (tbl : string array array) :
       let rows_to_keep = Array.make row_num (false) in
       filter_table tbl col_num comp obj rows_to_keep;
       rows_to_keep
+
+(** [del_rows rows_to_keep len tbl] is [tbl], which originally had length [len], 
+    with every index corresponding to true in [rows_to_del] removed. For 
+    example, if only the first and last indices of [rows_to_keep] were true, 
+    then [del_rows rows_to_keep len tbl] would be [tbl] without its first or 
+    last elements.*)
+let del_rows rows_to_keep len tbl =
+  let rec del_rows rows_to_keep row_num tbl i =
+    if i < 0 then tbl
+    else if rows_to_keep.(i) = true then
+      del_rows rows_to_keep row_num (remove_index i tbl) (i - 1)
+    else del_rows rows_to_keep row_num tbl (i - 1)
+  in
+  del_rows rows_to_keep len tbl (len - 1)
 
 let select filter tbl = 
   let inv_filter = Array.map (fun b -> not b) filter in
