@@ -8,11 +8,15 @@ val csv_array : string -> string array array
 (** [save filename data] saves [data] to [filename]. *)
 val save : string -> string array array -> unit
 
+(**[delete_file dir file] removes [file] from a given [dir].*)
+val delete_file: string -> string -> unit
+
 (** [csv_array dir database] saves all csvs in [dir] to [database].*)
 val csvs_in_hastbl: string -> (string, string array array) Hashtbl.t -> unit
 
 (**[is_dir dir] returns true if [dir] is existing dir. [false] otherewise.*)
 val is_dir: string -> bool
+
 (** [update_csv_files dir hastbl] updates the csv_files in [dir] with data from
     [hastbl].*)
 val update_csv_files: string -> (string, string array array) Hashtbl.t -> unit
