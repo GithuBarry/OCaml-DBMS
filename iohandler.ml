@@ -25,8 +25,18 @@ let csv_columns filename = Csv.(filename|>load|>lines)
 let to_csv array_csv = let csv1 = Csv.(array_csv|>of_array)
   in csv1
 
-(**[save fn array_csv] saves [array_csv] to filename [fn]*)
-let save fn array_csv = Csv.save fn (to_csv array_csv)
+(**[save fn array_csv] saves [array_csv] to filename [fn]. [fn] does not contain
+   .csv at the end.*)
+let save fn array_csv = Csv.save (fn^".csv") (to_csv array_csv)
+
+(** [update_csv_files dir hastbl] updates the csv_files in [dir] with data from
+    [hastbl].*)
+let update_csv_files dir hastbl =
+  let original_directory = Sys.getcwd () in
+  Sys.chdir dir;
+  (* get my hastbl values and call save on each *)
+  Hashtbl.iter save hastbl;
+  Sys.chdir original_directory
 
 (**[is_dir dir] returns true if [dir] is existing dir. [false] otherewise.*)
 let is_dir dir = 
