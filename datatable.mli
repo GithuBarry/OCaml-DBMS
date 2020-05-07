@@ -86,7 +86,7 @@ val update : filter -> set_objects -> t -> t
 (** [insert val_lst col_opt tbl] is [tbl], with a new row containing the values
     in [val_lst] in the columns specified in [col_opt] 
     Raises: [Invalid_Argument] if [tbl] does not contains a column named in 
-    [col_opt] *) (* Need exception for if lists are not same length? *)
+    [col_opt], or if the lists of values/columns are not the same length. *)
 val insert : value_object list -> column_objects option -> t -> t
 
 (** [order_by col_bool_lst tbl] is [tbl] with each row sorted in accordance 

@@ -119,33 +119,32 @@ let intersect_array array_1 array_2 =
     so that each of its indices which correspond to a row in [tbl] that 
     satisfies the condition [col_num] [comp] [obj] is changed to 1. 
     Raises: [Failure] if a [bi_re] other than [EQ] is used on non-integers.*)
-let filter_table tbl col_num comp obj res_array =
-  let check_row col_num obj res_array comp conv index row =
-    if index <> 0 && comp (conv row.(col_num)) (conv obj) then
-      res_array.(index) <- true
+let filter_table tbl col_index comp obj res =
+  let check_row col_index obj res comp conv index row =
+    if index <> 0 && comp (conv row.(col_index)) (conv obj) then
+      res.(index) <- true
     else ()
   in
   match comp with
-  | EQ -> Array.iteri (check_row col_num obj res_array ( = ) (fun x -> x)) tbl
-  | LT -> Array.iteri (check_row col_num obj res_array ( < ) int_of_string) tbl
-  | GT -> Array.iteri (check_row col_num obj res_array ( > ) int_of_string) tbl
-  | GTEQ ->
-      Array.iteri (check_row col_num obj res_array ( >= ) int_of_string) tbl
-  | LTEQ -> Array.iteri (check_row col_num obj res_array ( <= ) int_of_string) tbl
+  | EQ -> Array.iteri (check_row col_index obj res ( = ) (fun x -> x)) tbl
+  | LT -> Array.iteri (check_row col_index obj res ( < ) int_of_string) tbl
+  | GT -> Array.iteri (check_row col_index obj res ( > ) int_of_string) tbl
+  | GTEQ -> Array.iteri (check_row col_index obj res ( >= ) int_of_string) tbl
+  | LTEQ -> Array.iteri (check_row col_index obj res ( <= ) int_of_string) tbl
 
-let rec where (conds : Command.expr_objects) (tbl : string array array) :
-    bool array =
-    match conds with
-    | Binary (AND, expr1, expr2) ->
-        intersect_array (where expr1 tbl) (where expr2 tbl)
-    | Binary (OR, expr1, expr2) ->
-        union_array (where expr1 tbl) (where expr2 tbl)
-    | Expr (col, comp, obj) -> 
-      let col_num = find_index col tbl.(0) in
-      let row_num = num_rows tbl in
-      let rows_to_keep = Array.make row_num (false) in
-      filter_table tbl col_num comp obj rows_to_keep;
-      rows_to_keep
+let rec where conds tbl =
+  match conds with
+  | Binary (AND, expr1, expr2) ->
+      intersect_array (where expr1 tbl) (where expr2 tbl)
+  | Binary (OR, expr1, expr2) -> union_array (where expr1 tbl) (where expr2 tbl)
+  | Expr (col, comp, obj) ->
+      let col_index = find_index col tbl.(0) in
+      if col_index = -1 then raise (Invalid_argument "Invalid column name")
+      else
+        let row_num = num_rows tbl in
+        let rows_to_keep = Array.make row_num false in
+        filter_table tbl col_index comp obj rows_to_keep;
+        rows_to_keep
 
 (** [del_rows rows_to_keep len tbl] is [tbl], which originally had length [len], 
     with every index corresponding to true in [rows_to_del] removed. For 
@@ -161,18 +160,47 @@ let del_rows rows_to_keep len tbl =
   in
   del_rows rows_to_keep len tbl (len - 1)
 
-let select filter tbl = 
+let select filter tbl =  
   let inv_filter = Array.map (fun b -> not b) filter in
+  inv_filter.(0) <- true; (*Included to not select column names*) 
   del_rows inv_filter (num_rows tbl) tbl 
 
 let delete filter tbl =
   del_rows filter (num_rows tbl) tbl 
 
-let update filter set_objects tbl = 
-  failwith "unimplemented"
+let rec update filter set_objects tbl =
+  match set_objects with
+  | [] -> tbl
+  | (col, value) :: tl ->
+      let col_index = find_index col tbl.(0) in
+      if col_index = -1 then raise (Invalid_argument "Invalid column name")
+      else
+        Array.iteri
+          (fun i row ->
+            if filter.(i) = true then row.(col_index) <- value else ())
+          tbl;
+      update filter tl tbl
 
 let insert value_object_lst column_objects_opt tbl =
-  failwith "unimplemented"
+  let cols =
+    match column_objects_opt with
+    | Some (Columns lst) -> lst
+    | None -> Array.to_list tbl.(0)
+    | Some Wildcard -> failwith "Invalid command - can't use * for insert"
+  in
+  let n_tbl = add_row tbl in
+  let rec update_row cols vals row_index =
+    match (cols, vals) with
+    | [], [] -> n_tbl
+    | col :: tl1, value :: tl2 ->
+        let col_index = find_index col n_tbl.(0) in
+        if col_index = -1 then raise (Invalid_argument "Invalid column name")
+        else n_tbl.(row_index).(col_index) <- value;
+        update_row tl1 tl2 row_index
+    | _ -> failwith "Lists were not the same size"
+  in
+  update_row cols value_object_lst (num_rows n_tbl - 1)
+
 
 let order_by column_object_bool_lst tbl =
   failwith "unimplemented, may change spec" 
