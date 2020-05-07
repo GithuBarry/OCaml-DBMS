@@ -40,16 +40,16 @@ let tester (name:string) (expected) (result) =
   name >:: fun _ -> assert_equal expected result
 
 let sampleCSV e = e |> add_col "Name" |> add_col "Age" |> add_col "Loc" 
-                |> add_row |> add_row |> add_row
-                |> change_cell 1 0 "Leo" 
-                |> change_cell 1 1 "24" 
-                |> change_cell 1 2 "USA"
-                |> change_cell 2 0 "Thomas" 
-                |> change_cell 2 1 "20"  
-                |> change_cell 2 2 "USA" 
-                |> change_cell 3 0 "Barry" 
-                |> change_cell 3 1 "20"
-                |> change_cell 3 2 "CHN"    
+                  |> add_row |> add_row |> add_row
+                  |> change_cell 1 0 "Leo" 
+                  |> change_cell 1 1 "24" 
+                  |> change_cell 1 2 "USA"
+                  |> change_cell 2 0 "Thomas" 
+                  |> change_cell 2 1 "20"  
+                  |> change_cell 2 2 "USA" 
+                  |> change_cell 3 0 "Barry" 
+                  |> change_cell 3 1 "20"
+                  |> change_cell 3 2 "CHN"    
 
 (* [rows]_x_[columns] *)
 let create_1x1 e = e |> add_col "one"
@@ -242,27 +242,27 @@ let datatable_tests : test list =
     equal_test "36" [|  [|"two"; "three"|]; 
                         [| ""   ; ""    |]; 
                         [| ""   ; ""    |]  |] 
-                    (get_cols_data ["two";"three"] (create_3x3 empty));
+      (get_cols_data ["two";"three"] (create_3x3 empty));
 
     equal_test "37" [|  [|"one"; "three"|]; 
                         [| ""   ; ""    |]; 
                         [| ""   ; ""    |]  |] 
-                    (get_cols_data ["one";"three"] (create_3x3 empty));
+      (get_cols_data ["one";"three"] (create_3x3 empty));
 
     equal_test "38" [|  [|"one"|]; 
                         [| ""   |]; 
                         [| ""   |]  |] 
-                    (get_cols_data ["one"] (create_3x3 empty));
+      (get_cols_data ["one"] (create_3x3 empty));
 
     equal_test "39" [|  [|"two"|]; 
                         [| ""   |]; 
                         [| ""   |]  |] 
-                    (get_cols_data ["two"] (create_3x3 empty));
+      (get_cols_data ["two"] (create_3x3 empty));
 
     equal_test "40" [|  [|"three"|]; 
                         [| ""   |]; 
                         [| ""   |]  |] 
-                    (get_cols_data ["three"] (create_3x3 empty));
+      (get_cols_data ["three"] (create_3x3 empty));
 
     (*Testing that select is woking as intended*) 
     equal_test "41" [|  [|"Name"  ; "Age"; "Loc"|]; 
@@ -272,50 +272,50 @@ let datatable_tests : test list =
 
     equal_test "42" [| [|"Thomas"; "20" ; "USA"|]; |] 
       (select (where (Expr ("Name", EQ, "Thomas")) (sampleCSV empty) ) 
-        (sampleCSV empty));
+         (sampleCSV empty));
 
     equal_test "43" [|  [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Thomas"; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (select (where (Expr ("Age", GT, "-5")) (sampleCSV empty) ) 
-        (sampleCSV empty));
+         (sampleCSV empty));
 
     equal_test "44" [|  [|"Leo"   ; "24" ; "USA"|];  |] 
       (select (where (Expr ("Age", GT, "20")) (sampleCSV empty)) 
-        (sampleCSV empty));
+         (sampleCSV empty));
 
     equal_test "45" [|  [|"Thomas"; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (select (where (Expr ("Age", LT, "24")) (sampleCSV empty) ) 
-        (sampleCSV empty));
+         (sampleCSV empty));
 
 
     equal_test "46" [| [|"Thomas"; "20" ; "USA"|]; |] 
       (select (where (Binary (AND, Expr ("Age", EQ, "20"), 
-        Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
+                              Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "47" [|  [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (select (where (Binary (OR, Expr ("Age", GT, "21"), 
-        (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
-          (sampleCSV empty) ) (sampleCSV empty));
+                              (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
+                 (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "48" [| |] 
       (select (where (Binary (AND, Expr ("Name", EQ, "Thomas"),
-        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
-          (sampleCSV empty) ) (sampleCSV empty));
+                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+                 (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "49"  [| [|"Thomas"; "20" ; "USA"|]; |] 
       (select (where (Binary (OR, Expr ("Name", EQ, "Thomas"), 
-        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
-          (sampleCSV empty) ) (sampleCSV empty));
+                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+                 (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "50"  [| [|"10"  ;"11"  ; "12"  ; "13" ; "14"  |];  
                         [|"30"  ;"31"  ; "32"  ; "33" ; "34"  |]; 
                         [|"40"  ;"41"  ; "42"  ; "43" ; "44"  |];  |] 
       (select(where (Binary (OR, Expr ("one", GTEQ, "30"),
-        (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
-          (create_filled_5x5 empty) ) (create_filled_5x5 empty));
+                             (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
+                (create_filled_5x5 empty) ) (create_filled_5x5 empty));
 
     (*Testing that delete is woking as intended*) 
 
@@ -323,62 +323,62 @@ let datatable_tests : test list =
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Expr ("Name", EQ, "Thomas")) (sampleCSV empty) ) 
-        (sampleCSV empty));
+         (sampleCSV empty));
 
     equal_test "52" [|  [|"Name"  ; "Age"; "Loc"|];  |] 
       (delete (where (Expr ("Age", GT, "-5")) (sampleCSV empty) ) 
-        (sampleCSV empty));
+         (sampleCSV empty));
 
     equal_test "53" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Thomas"; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Expr ("Age", GT, "20")) (sampleCSV empty)) 
-        (sampleCSV empty));
+         (sampleCSV empty));
 
     equal_test "54" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|];  |] 
       (delete (where (Expr ("Age", LT, "24")) (sampleCSV empty) ) 
-        (sampleCSV empty));
+         (sampleCSV empty));
 
     equal_test "55" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Binary (AND, Expr ("Age", EQ, "20"), 
-        Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
+                              Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "56" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Thomas"; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Binary (AND, Expr ("Age", EQ, "20"), 
-        Expr ("Age", EQ, "24"))) (sampleCSV empty) ) (sampleCSV empty));
+                              Expr ("Age", EQ, "24"))) (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "57" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Thomas"; "20" ; "USA"|];  |] 
       (delete (where (Binary (OR, Expr ("Age", GT, "21"),
-        (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
-          (sampleCSV empty) ) (sampleCSV empty));
+                              (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
+                 (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "58" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Thomas"; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Binary (AND, Expr ("Name", EQ, "Thomas"),
-        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
-          (sampleCSV empty) ) (sampleCSV empty));
+                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+                 (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "59" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Binary (OR, Expr ("Name", EQ, "Thomas"),
-        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
-          (sampleCSV empty) ) (sampleCSV empty));
+                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+                 (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "60" [|  [|"one" ;"two" ;"three";"four";"five" |];  
                         [|"20"  ;"21"  ; "22"  ; "23" ; "24"  |];  |] 
       (delete (where (Binary (OR, Expr ("one", GTEQ, "30"),
-        (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
-          (create_filled_5x5 empty) ) (create_filled_5x5 empty));
+                              (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
+                 (create_filled_5x5 empty) ) (create_filled_5x5 empty));
 
     (*Testing that update is woking as intended*) 
     equal_test "61" [|  [|"Name"  ; "Age"; "Loc"|]; 
@@ -386,37 +386,37 @@ let datatable_tests : test list =
                         [|"Thomas"; "100"; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (update (where (Expr ("Name", EQ, "Thomas")) (sampleCSV empty) ) 
-        ([("Age","100")]) ((sampleCSV empty)));
+         ([("Age","100")]) ((sampleCSV empty)));
 
     equal_test "62" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Tom"   ; "42" ; "ITH"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (update (where (Expr ("Name", EQ, "Thomas")) (sampleCSV empty) ) 
-        ([("Name","Tom");("Age","42");("Loc","ITH"); ]) ((sampleCSV empty)));
+         ([("Name","Tom");("Age","42");("Loc","ITH"); ]) ((sampleCSV empty)));
 
     equal_test "63" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Nate"  ; "24" ; "USA"|]; 
                         [|"Nate"  ; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (update (where (Binary (AND, Expr ("Age", GTEQ, "0"), 
-        Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) 
-          ([("Name","Nate")]) ((sampleCSV empty))); 
+                              Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) 
+         ([("Name","Nate")]) ((sampleCSV empty))); 
 
     equal_test "64" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Nate"  ; "24" ; "USA"|]; 
                         [|"Nate"  ; "20" ; "USA"|]; 
                         [|"Nate" ; "20"  ; "CHN"|]  |] 
       (update (where (Binary (OR, Expr ("Age", EQ, "24"), 
-        Expr ("Age", EQ, "20"))) (sampleCSV empty) ) 
-          ([("Name","Nate")]) ((sampleCSV empty))); 
+                              Expr ("Age", EQ, "20"))) (sampleCSV empty) ) 
+         ([("Name","Nate")]) ((sampleCSV empty))); 
 
     equal_test "65" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Thomas"; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (update (where (Expr ("Age", EQ, "21")) (sampleCSV empty) )  
-        ([("Loc","CAN")]) ((sampleCSV empty)));
+         ([("Loc","CAN")]) ((sampleCSV empty)));
 
     (*Testing that insert is woking as intended*)
 
@@ -426,7 +426,7 @@ let datatable_tests : test list =
                         [|"Barry" ; "20" ; "CHN"|];  
                         [|"Nate"  ; "40" ; "USA"|]  |] 
       (insert (["Nate";"40"; "USA"]) (None) 
-        (sampleCSV empty) ) ;
+         (sampleCSV empty) ) ;
 
     equal_test "67" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
@@ -434,7 +434,7 @@ let datatable_tests : test list =
                         [|"Barry" ; "20" ; "CHN"|];  
                         [|"Nate"  ; "40" ; "USA"|]  |] 
       (insert (["Nate";"40"; "USA"])  (Some (Columns ["Name";"Age";"Loc"]))  
-        (sampleCSV empty) ) ;
+         (sampleCSV empty) ) ;
 
     equal_test "68" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
@@ -442,7 +442,7 @@ let datatable_tests : test list =
                         [|"Barry" ; "20" ; "CHN"|];  
                         [|"Nate"  ; ""   ; "USA"|]  |] 
       (insert (["Nate"; "USA"]) (Some (Columns ["Name";"Loc"])) 
-        (sampleCSV empty) ) ;
+         (sampleCSV empty) ) ;
 
     equal_test "69" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
@@ -504,6 +504,15 @@ let parser_tests : test list =
                                                   Expr ("is banned", EQ, "false"))))],
        [OrderBy [("Date", true); ("No", false)]])
       (parse "SELECT * FROM table name WHERE status = valid AND medicine = valid OR emergency auth = true AND is banned = false ORDER BY Date DESC, No ASC");
+
+    tester "parse SELECT 5 with NOT" 
+      (Select Wildcard,
+       [From "table name";Where(Binary (OR,
+                                        Binary (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
+                                        Binary (AND, Expr ("emergency auth", EQ, "true"),
+                                                NotExpr ("NOT is banned", EQ, "false"))))],
+       [OrderBy [("Date", true); ("No", false)]])
+      (parse "SELECT * FROM table name WHERE status = valid AND medicine = valid OR emergency auth = true AND NOT is banned = false ORDER BY Date DESC, No ASC");
 
     tester "Parse UPDATE 1" (Update "table",
                              [Where (Expr ("age", GT, "21")); Set [("name", "adult"); ("drinking", "ok")]],

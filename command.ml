@@ -27,6 +27,7 @@ type set_objects = (column_object * value_object) list
 type expr_objects = 
     Expr of column_object * bi_re * value_object
   | Binary of bi_op * expr_objects * expr_objects 
+  | NotExpr of column_object * bi_re * value_object
 
 type command_verb = 
   | Select of column_objects
@@ -177,7 +178,9 @@ let rec parse_expr str_list =
     Binary (parse_bi_op bi_op, parse_expr before, parse_expr after)
   else let (before, re, after) = list_partition [">";"=";"<";">=";"<="] str_list 
     in
-    Expr (parse_column before, parse_bi_re re, parse_value after)
+    match before with 
+      "NOT"::t -> NotExpr (parse_column before, parse_bi_re re, parse_value after)
+    | _ -> Expr (parse_column before, parse_bi_re re, parse_value after)
 
 
 (** [parse_table_name str_list] returns a [table_name] out of [str_list]

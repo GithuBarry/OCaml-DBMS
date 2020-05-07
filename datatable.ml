@@ -145,6 +145,7 @@ let rec where conds tbl =
       let rows_to_keep = Array.make row_num false in
       filter_table tbl col_index comp obj rows_to_keep;
       rows_to_keep
+  |NotExpr (col, comp, obj) -> failwith "Unimplemented"
 
 let all_pass tbl = failwith "unimplemented" 
 

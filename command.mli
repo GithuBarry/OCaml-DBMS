@@ -39,6 +39,7 @@ type set_objects = (column_object * value_object) list
 type expr_objects = 
     Expr of column_object * bi_re * value_object
   | Binary of bi_op * expr_objects * expr_objects 
+  | NotExpr of column_object * bi_re * value_object
 
 
 (** The type [command_verb] represents a necessary identifer of the command
