@@ -68,8 +68,7 @@ val get_cols_data : string list -> t -> t
 val where : expr_objects -> t -> filter
 
 (** [all_pass tbl] is a [filter] in which all rows in [tbl] are true *)
-val all_pass : t -> filter
-
+val all_pass : t -> filter 
 
 (** [select filter tbl] is the rows of [tbl] whose index coorespond to a true 
     entry at the same index in [filter]. 

@@ -147,7 +147,7 @@ let rec where conds tbl =
       rows_to_keep
   |NotExpr (col, comp, obj) -> failwith "Unimplemented"
 
-let all_pass tbl = failwith "unimplemented" 
+let all_pass tbl = Array.make (num_rows tbl) false
 
 (** [del_rows rows_to_keep len tbl] is [tbl], which originally had length [len], 
     with every index corresponding to true in [rows_to_del] removed. For 
@@ -165,7 +165,7 @@ let del_rows rows_to_keep len tbl =
 
 let select filter tbl =  
   let inv_filter = Array.map (fun b -> not b) filter in
-  inv_filter.(0) <- true; (*Included to not select column names*) 
+  inv_filter.(0) <- false; 
   del_rows inv_filter (num_rows tbl) tbl 
 
 let delete filter tbl =
