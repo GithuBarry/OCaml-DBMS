@@ -67,6 +67,10 @@ val get_cols_data : string list -> t -> t
     [conds] *)
 val where : expr_objects -> t -> filter
 
+(** [all_pass tbl] is a [filter] in which all rows in [tbl] are true *)
+val all_pass : t -> filter
+
+
 (** [select filter tbl] is the rows of [tbl] whose index coorespond to a true 
     entry at the same index in [filter]. 
     Requires: The length of filter = the number of rows originally in [tbl] *)
@@ -93,7 +97,7 @@ val insert : value_object list -> column_objects option -> t -> t
     with [col_bool_lst].
     Raises: [Invalid_Argument] if [tbl] does not contains a column named in 
     [col_bool_lst] *) (* more specific? exception for same column more than 
-    once?*)
+                         once?*)
 val order_by : (column_object * bool) list -> t -> t
 
 

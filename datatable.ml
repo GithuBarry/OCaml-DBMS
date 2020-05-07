@@ -73,7 +73,7 @@ let change_cell i j value tbl=
   then raise (Invalid_argument "index out of bounds") else
   if i = 0 then raise (Invalid_argument "Can't modify column names") else
     tbl.(i).(j) <- value;
-    tbl
+  tbl
 
 let get_cols_data (c_list:string list) (tbl:string array array) =
   let tbl_copy = Array.copy tbl in
@@ -135,16 +135,18 @@ let filter_table tbl col_index comp obj res =
 let rec where conds tbl =
   match conds with
   | Binary (AND, expr1, expr2) ->
-      intersect_array (where expr1 tbl) (where expr2 tbl)
+    intersect_array (where expr1 tbl) (where expr2 tbl)
   | Binary (OR, expr1, expr2) -> union_array (where expr1 tbl) (where expr2 tbl)
   | Expr (col, comp, obj) ->
-      let col_index = find_index col tbl.(0) in
-      if col_index = -1 then raise (Invalid_argument "Invalid column name")
-      else
-        let row_num = num_rows tbl in
-        let rows_to_keep = Array.make row_num false in
-        filter_table tbl col_index comp obj rows_to_keep;
-        rows_to_keep
+    let col_index = find_index col tbl.(0) in
+    if col_index = -1 then raise (Invalid_argument "Invalid column name")
+    else
+      let row_num = num_rows tbl in
+      let rows_to_keep = Array.make row_num false in
+      filter_table tbl col_index comp obj rows_to_keep;
+      rows_to_keep
+
+let all_pass tbl = failwith "unimplemented" 
 
 (** [del_rows rows_to_keep len tbl] is [tbl], which originally had length [len], 
     with every index corresponding to true in [rows_to_del] removed. For 
@@ -172,14 +174,14 @@ let rec update filter set_objects tbl =
   match set_objects with
   | [] -> tbl
   | (col, value) :: tl ->
-      let col_index = find_index col tbl.(0) in
-      if col_index = -1 then raise (Invalid_argument "Invalid column name")
-      else
-        Array.iteri
-          (fun i row ->
-            if filter.(i) = true then row.(col_index) <- value else ())
-          tbl;
-      update filter tl tbl
+    let col_index = find_index col tbl.(0) in
+    if col_index = -1 then raise (Invalid_argument "Invalid column name")
+    else
+      Array.iteri
+        (fun i row ->
+           if filter.(i) = true then row.(col_index) <- value else ())
+        tbl;
+    update filter tl tbl
 
 let insert value_object_lst column_objects_opt tbl =
   let cols =
@@ -193,10 +195,10 @@ let insert value_object_lst column_objects_opt tbl =
     match (cols, vals) with
     | [], [] -> n_tbl
     | col :: tl1, value :: tl2 ->
-        let col_index = find_index col n_tbl.(0) in
-        if col_index = -1 then raise (Invalid_argument "Invalid column name")
-        else n_tbl.(row_index).(col_index) <- value;
-        update_row tl1 tl2 row_index
+      let col_index = find_index col n_tbl.(0) in
+      if col_index = -1 then raise (Invalid_argument "Invalid column name")
+      else n_tbl.(row_index).(col_index) <- value;
+      update_row tl1 tl2 row_index
     | _ -> failwith "Lists were not the same size"
   in
   update_row cols value_object_lst (num_rows n_tbl - 1)
