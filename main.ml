@@ -21,7 +21,9 @@ let database = Hashtbl.create 100
 
 (** [update_database name table] updates [name] to [name] in [database] *)
 let update_database name table = 
-  Hashtbl.replace database name ((Hashtbl.find database name|> fst), table)
+  let directory = Hashtbl.find database name|> fst in
+  Hashtbl.replace database name (directory, table);
+  Iohandler.update_csv_files name database
 
 (** [get_table_name command_subject_lst] is the [table_name] represented in 
     [FROM] in [command_subject_lst] 
