@@ -128,7 +128,8 @@ let rec rep_loop () : unit=
               table_name; 
             Hashtbl.remove database table_name;
             print_string table_name; 
-            print_endline " deleted." 
+            print_endline " deleted.";
+            rep_loop ()
           end
         | Some exprs -> begin
             let modified_table = delete (where exprs raw_table) raw_table in
