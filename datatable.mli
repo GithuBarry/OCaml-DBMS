@@ -83,20 +83,20 @@ val delete : filter -> t -> t
 (** [update filter set_objs tbl] is [tbl], with each row specified in [filter] 
     modified to match the column, value pairs given in [set_objs].  
     Raises: [Invalid_Argument] if [tbl] does not contain a column named in 
-    [set_objs] *) (*Exception not necessary? Would it be handled in where? *)
+    [set_objs] *) 
 val update : filter -> set_objects -> t -> t
 
 (** [insert val_lst col_opt tbl] is [tbl], with a new row containing the values
     in [val_lst] in the columns specified in [col_opt] 
     Raises: [Invalid_Argument] if [tbl] does not contains a column named in 
-    [col_opt], or if the lists of values/columns are not the same length. *)
+    [col_opt], or if the lists of values/columns are not the same length. Or, 
+    [Failure] if Wildcard command is illegally passed.*)
 val insert : value_object list -> column_objects option -> t -> t
 
 (** [order_by col_bool_lst tbl] is [tbl] with each row sorted in accordance 
     with [col_bool_lst].
     Raises: [Invalid_Argument] if [tbl] does not contains a column named in 
-    [col_bool_lst] *) (* more specific? exception for same column more than 
-                         once?*)
+    [col_bool_lst] *) 
 val order_by : (column_object * bool) list -> t -> t
 
 
