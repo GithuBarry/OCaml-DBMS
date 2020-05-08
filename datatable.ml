@@ -115,6 +115,8 @@ let intersect_array array_1 array_2 =
   let len = Array.length array_1 in
   intersect array_1 array_2 len (Array.make len false) 0
 
+let inverse_filter filter = Array.map (fun b -> not b) filter
+
 (** [filter_table tbl col_num comp obj res_array] modifies [res_array] in place,
     so that each of its indices which correspond to a row in [tbl] that 
     satisfies the condition [col_num] [comp] [obj] is changed to 1. 
@@ -145,7 +147,8 @@ let rec where conds tbl =
       let rows_to_keep = Array.make row_num false in
       filter_table tbl col_index comp obj rows_to_keep;
       rows_to_keep
-  |NotExpr (col, comp, obj) -> failwith "Unimplemented"
+  |NotExpr (col, comp, obj) -> 
+    inverse_filter (where (Expr (col, comp, obj)) tbl)
 
 let all_pass tbl =
   let res = Array.make (num_rows tbl) true in
@@ -167,7 +170,7 @@ let del_rows rows_to_keep len tbl =
   del_rows rows_to_keep len tbl (len - 1)
 
 let select filter tbl =  
-  let inv_filter = Array.map (fun b -> not b) filter in
+  let inv_filter = inverse_filter filter in
   inv_filter.(0) <- false; 
   del_rows inv_filter (num_rows tbl) tbl 
 
@@ -203,7 +206,7 @@ let insert value_object_lst column_objects_opt tbl =
       if col_index = -1 then raise (Invalid_argument "Invalid column name")
       else n_tbl.(row_index).(col_index) <- value;
       update_row tl1 tl2 row_index
-    | _ -> failwith "Lists were not the same size"
+    | _ -> raise (Invalid_argument "Number of values did not match number of columns.")
   in
   update_row cols value_object_lst (num_rows n_tbl - 1)
 
