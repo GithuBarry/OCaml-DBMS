@@ -207,6 +207,26 @@ let insert value_object_lst column_objects_opt tbl =
   in
   update_row cols value_object_lst (num_rows n_tbl - 1)
 
+let char_cmp c1 c2 = let v1 = Char.code c1 in
+  let v2 = Char.code c2 in
+  if v1>v2 then 1 else if v1=v2 then 0 else -1 
+
+(** [alphabetical_cmp s1 s2] is:
+    a. 1 if s1 has higher alphabetical order than s2
+    b. 0 if s1 and s2 are equal
+    c. -1 if s1 has lower alphabetical order than s2
+    Precondtion: s1 and s2 has to be both lower case. Please use
+    [String.lowercase_ascii] on inputs before applying this funciton*)
+let rec alphabetical_cmp s1 s2 = match (s1,s2) with
+  |("","")->0
+  |("", x ) -> 1
+  |(x, "") -> -1
+  |(s1, s2) -> 
+    let cmp = char_cmp s1.[0] s2.[0] in
+    if cmp <> 0 then cmp else let s1' = String.sub s1 1 (String.length(s1)-1) in
+      let s2' = String.sub s2 1 (String.length(s2)-1) in
+      alphabetical_cmp s1' s2'
+
 
 let order_by column_object_bool_lst tbl =
   failwith "unimplemented, may change spec" 
