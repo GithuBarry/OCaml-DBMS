@@ -159,7 +159,7 @@ let rec rep_loop () : unit=
 (** [main ()] prompts for the directory/folder to open, then initiates REPL. *)
 let rec main () =
   ANSITerminal.(print_string [ red ] "\n\n Welcome to the OCaml-DBMS.\n");
-  print_endline " Please enter the directory of the Database.\n";
+  print_endline " Please enter directory/directories (separated by ,) of the Database.\n";
   print_string "> ";
   try (let rec get_database () = 
          let dir_list = ()|>read_line|>list_of_dir in
