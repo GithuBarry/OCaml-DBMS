@@ -1,5 +1,6 @@
 (**
    Parsing of SQL commands.
+   @author: Barry Wang
 *)
 type bi_op = 
     AND
@@ -298,7 +299,6 @@ let parse_delete str_list : command =
     - use of [']
     - Any title, value, name with consecutively 2+ spaces. e.g. "Last     Name" 
     - Column name with [,]
-    - Not
     - No space in bi-relation. "x>0" must be written as "x > 0" and etc. 
     - Greater than wrtten as "> =" or similar separation of style
     - Adding a space after a comma e.g. "a, b" is ["[a],[ b]"] not ["[a],[b]"]
