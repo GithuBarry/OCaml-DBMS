@@ -465,6 +465,36 @@ let datatable_tests : test list =
                         [|"Barry" ; "20" ; "CHN"|];  
                         [| ""     ; ""   ; ""   |]  |] 
       (insert ([]) (Some (Columns [])) (sampleCSV empty) ) ;
+
+    (*Testing that NotExpr is working properly *)
+    
+    equal_test "71" [|  [|"Name"  ; "Age"; "Loc"|]; 
+                        [|"Leo"   ; "24" ; "USA"|]; 
+                        [|"Barry" ; "20" ; "CHN"|]  |] 
+      (select (where (NotExpr ("Name", EQ, "Thomas")) (sampleCSV empty) ) 
+         (sampleCSV empty));
+
+    equal_test "72" [|  [|"Name"  ; "Age"; "Loc"|]; |] 
+      (select (where (NotExpr ("Age", GT, "-5")) (sampleCSV empty) ) 
+         (sampleCSV empty));
+
+    equal_test "73" [|  [|"Name"  ; "Age"; "Loc"|]; 
+                        [|"Thomas"; "20" ; "USA"|]; 
+                        [|"Barry" ; "20" ; "CHN"|]  |] 
+      (select (where (NotExpr ("Age", GT, "20")) (sampleCSV empty)) 
+         (sampleCSV empty));
+
+    equal_test "74" [|  [|"Name"  ; "Age"; "Loc"|]; 
+                        [|"Barry" ; "20" ; "CHN"|]  |] 
+      (select (where (Binary (AND, Expr ("Age", EQ, "20"), 
+                              NotExpr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
+
+    equal_test "75" [|  [|"Name"  ; "Age"; "Loc"|]; 
+                        [|"Leo"   ; "24" ; "USA"|]; 
+                        [|"Thomas"; "20" ; "USA"|];  |] 
+      (select (where (Binary (OR, NotExpr ("Age", LT, "21"), 
+                              (Binary (AND, Expr ("Age", EQ, "20"), NotExpr ("Name", EQ, "Barry"))))) 
+                 (sampleCSV empty) ) (sampleCSV empty));
   ]
 
 let parser_tests : test list =  
