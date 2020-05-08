@@ -124,6 +124,7 @@ let rec rep_loop () : unit=
           None -> begin 
             Iohandler.delete_file (Hashtbl.find database table_name|> fst) 
               table_name; 
+            Hashtbl.remove database table_name;
             print_string table_name; 
             print_endline " deleted." 
           end
@@ -147,6 +148,9 @@ let rec rep_loop () : unit=
     rep_loop ()
   | Failure x -> 
     print_string " Failure: "; print_string x;
+    print_endline " Please try again \n > "; rep_loop ()
+  | Invalid_argument x -> 
+    print_string " Invalid Argument: "; print_string x;
     print_endline " Please try again \n > "; rep_loop ()
   | _ -> print_endline " Please try again \n > "; rep_loop ()
 
