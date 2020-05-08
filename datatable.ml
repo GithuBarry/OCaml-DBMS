@@ -212,7 +212,7 @@ let insert value_object_lst column_objects_opt tbl =
 
 let char_cmp c1 c2 = let v1 = Char.code c1 in
   let v2 = Char.code c2 in
-  if v1>v2 then 1 else if v1=v2 then 0 else -1 
+  if v1<v2 then 1 else if v1=v2 then 0 else -1 
 
 (** [alphabetical_cmp s1 s2] is:
     a. 1 if s1 has higher alphabetical order than s2
