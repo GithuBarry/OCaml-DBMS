@@ -180,7 +180,8 @@ let rec parse_expr str_list =
   else let (before, re, after) = list_partition [">";"=";"<";">=";"<="] str_list 
     in
     match before with 
-      "NOT"::t -> NotExpr (parse_column before, parse_bi_re re, parse_value after)
+      "NOT"::t -> 
+      NotExpr (parse_column before, parse_bi_re re, parse_value after)
     | _ -> Expr (parse_column before, parse_bi_re re, parse_value after)
 
 
