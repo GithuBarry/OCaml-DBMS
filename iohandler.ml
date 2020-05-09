@@ -1,3 +1,7 @@
+(**
+   Iohandler saves and uploads CSV files to the database when used. 
+*)
+
 open Csv
 open Hashtbl
 open Sys
