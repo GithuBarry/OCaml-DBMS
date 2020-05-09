@@ -2,7 +2,7 @@ open Command
 (** AF: A datatable represented as an array of rows, for which each row is 
     represented as array of columns. The first row is the headers of the table. 
     Any empty cells are represented as the empty string. 
-    RI: The datatable is "rectangular" , all rows have the same number of 
+    RI: The datatable is "rectangular": all rows have the same number of 
     columns, and all columns have the same number of rows. All columns have 
     unique names. *)
 type t = string array array
@@ -54,7 +54,7 @@ let remove_index i array =
 let del_col s tbl = 
   if is_empty tbl then raise (Invalid_argument "table is empty" )
   else if not (contains_col tbl s) then
-    raise (Invalid_argument "Specified Column doesn't exist")
+    raise (Invalid_argument "Invalid column name")
   else if num_cols tbl = 1 then empty
   else
     let index_to_del = find_index s tbl.(0) in
@@ -195,21 +195,25 @@ let insert value_object_lst column_objects_opt tbl =
     match column_objects_opt with
     | Some (Columns lst) -> lst
     | None -> Array.to_list tbl.(0)
-    | Some Wildcard -> failwith "Invalid command - can't use * for insert"
+    | Some Wildcard -> raise (Failure "Invalid command: can't use * for insert")
   in
   let n_tbl = add_row tbl in
   let rec update_row cols vals row_index =
     match (cols, vals) with
     | [], [] -> n_tbl
     | col :: tl1, value :: tl2 ->
-      let col_index = find_index col n_tbl.(0) in
-      if col_index = -1 then raise (Invalid_argument "Invalid column name")
-      else n_tbl.(row_index).(col_index) <- value;
-      update_row tl1 tl2 row_index
-    | _ -> raise (Invalid_argument "Number of values did not match number of columns.")
+        let col_index = find_index col n_tbl.(0) in
+        if col_index = -1 then raise (Invalid_argument "Invalid column name")
+        else n_tbl.(row_index).(col_index) <- value;
+        update_row tl1 tl2 row_index
+    | _ ->
+        raise
+          (Invalid_argument "Number of values did not match number of columns.")
   in
   update_row cols value_object_lst (num_rows n_tbl - 1)
 
+(** [char_cmp c1 c2] is -1, 0, or 1, depending on if the ASCII code of [c1] is 
+    less than, equal to, or greater than the ASCII code of [c2], respectively.*) 
 let char_cmp c1 c2 = let v1 = Char.code c1 in
   let v2 = Char.code c2 in
   if v1<v2 then 1 else if v1=v2 then 0 else -1 
@@ -218,8 +222,8 @@ let char_cmp c1 c2 = let v1 = Char.code c1 in
     a. 1 if s1 has higher alphabetical order than s2
     b. 0 if s1 and s2 are equal
     c. -1 if s1 has lower alphabetical order than s2
-    Precondtion: s1 and s2 has to be both lower case. Please use
-    [String.lowercase_ascii] on inputs before applying this funciton*)
+    Requires: s1 and s2 are both lower case. Can use [String.lowercase_ascii] on
+    inputs before applying this funciton to satisfy this condition. *)
 let rec alphabetical_cmp s1 s2 = match (s1,s2) with
   |("","")->0
   |("", x ) -> 1
@@ -230,6 +234,49 @@ let rec alphabetical_cmp s1 s2 = match (s1,s2) with
       let s2' = String.sub s2 1 (String.length(s2)-1) in
       alphabetical_cmp s1' s2'
 
+(** [row_compare i row1 row2] is -1, 0, or 1, depending on if the [i]th index of
+    [row1] is less than, equal to, or greater than the [i]th index of [row2], 
+    respectively. 
+    Requires: row1, row2 have length >= i + 1 *)
+let row_compare i row1 row2 =
+  let v1 = row1.(i) in 
+  let v2 = row2.(i) in 
+  try
+    let v1_int = int_of_string v1 in
+    let v2_int = int_of_string v2 in
+    compare v2_int v1_int
+  with Failure x ->
+    alphabetical_cmp (String.lowercase_ascii v1) (String.lowercase_ascii v2)
+
+(** [rev tbl] is [tbl] with it's rows in reverse order. *)
+let rev tbl =
+  let num_rows = num_rows tbl - 1 in
+  for i = 0 to num_rows / 2 do
+    let temp = tbl.(i) in
+    tbl.(i) <- tbl.(num_rows - i);
+    tbl.(num_rows - i) <- temp
+  done;
+  tbl
+
+(** [prepend header tbl] is [tbl] with [header] prepended to be the top row.
+    Should be used only on a table with no column names, where [header] contains 
+    the column names.
+    Requires: The length of [header] = the number of columns in [tbl] *)
+let prepend (header : string array) (tbl : string array array) =
+  let len = num_cols tbl in
+  let n_tbl = Array.append (Array.make_matrix 1 len "") tbl in
+  for i = 0 to len - 1 do
+    n_tbl.(0).(i) <- header.(i)
+  done;
+  n_tbl
 
 let order_by column_object_bool_lst tbl =
-  failwith "unimplemented, may change spec" 
+  let header = Array.copy tbl.(0) in
+  let n_tbl = remove_index 0 tbl in
+  match column_object_bool_lst with
+  | [] -> n_tbl
+  | (col, b) :: tl ->
+      let col_index = find_index col header in
+      if col_index = -1 then raise (Invalid_argument "Invalid column name")
+      else Array.stable_sort (row_compare col_index) n_tbl;
+      if b then prepend header n_tbl else prepend header (rev n_tbl)
