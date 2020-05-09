@@ -81,6 +81,65 @@ let get_formatted command_formatter table = match command_formatter with
   | [OrderBy x] -> order_by x table
   | _ -> failwith "Unexpected formatter"
 
+(** [select_apply command_subject_lst command_formatter_lst column_objects]  
+    applies SELECT command to the database and the filesystem
+    , given the parameters.*)
+let select_apply command_subject_lst command_formatter_lst column_objects = 
+  let table_name = get_table_name command_subject_lst in 
+  let raw_table = get_table table_name in
+  let formatted_table = get_formatted command_formatter_lst raw_table in 
+  let filtered_table = 
+    match get_where_exprs_opt command_subject_lst with 
+    | None -> formatted_table
+    | Some exprs -> select (where exprs formatted_table) formatted_table 
+  in
+  let cols = get_columns filtered_table column_objects in
+  cols |> print_2D_array
+
+(** [insertinto_apply command_subject_lst table_name column_objects_opt]  
+    applies INSERTINTO command to the database and the filesystem, 
+    given the parameters. *)
+let insertinto_apply command_subject_lst table_name column_objects_opt =
+  let raw_table = get_table table_name in
+  let inserted_table = insert (get_values command_subject_lst) 
+      column_objects_opt raw_table
+  in
+  update_database table_name inserted_table;
+  inserted_table |>print_2D_array
+
+(** [update_apply command_subject_lst command_formatter_lst table _name]
+    applies UPDATE command to the database and the filesystem,
+    given the paramters. *)
+let update_apply command_subject_lst command_formatter_lst table_name =
+  let raw_table = get_table table_name in
+  let updated_table = match get_where_exprs_opt command_subject_lst with 
+    | None -> update (all_pass raw_table) 
+                (get_sets command_subject_lst) raw_table
+    | Some exprs -> update (where exprs raw_table) 
+                      (get_sets command_subject_lst) raw_table
+  in
+  update_database table_name updated_table;
+  updated_table |>print_2D_array
+
+(** [delete_apply command_subject_lst command_formmatter_lst] applies DELETE
+    command to the database and the filesystem, givne the paramters. *)
+let delete_apply command_subject_lst command_formatter_lst =
+  let table_name = get_table_name command_subject_lst in 
+  let raw_table = get_table table_name in
+  match get_where_exprs_opt command_subject_lst with
+    None -> begin 
+      Iohandler.delete_file (Hashtbl.find database table_name|> fst) 
+        table_name; 
+      Hashtbl.remove database table_name;
+      print_string table_name; 
+      print_endline " deleted."
+    end
+  | Some exprs -> begin
+      let modified_table = delete (where exprs raw_table) raw_table in
+      update_database table_name modified_table;
+      modified_table |>print_2D_array
+    end
+
 let rec rep_loop () : unit=
   print_string "\n\n Enter command: \n\n > ";
   try begin 
@@ -89,53 +148,20 @@ let rec rep_loop () : unit=
     in 
     match command_verb with 
     | Select column_objects -> begin
-        let table_name = get_table_name command_subject_lst in 
-        let raw_table = get_table table_name in
-        let formatted_table = get_formatted command_formatter_lst raw_table in 
-        let filtered_table = 
-          match get_where_exprs_opt command_subject_lst with 
-          | None -> formatted_table
-          | Some exprs -> select (where exprs formatted_table) formatted_table 
-        in
-        let cols = get_columns filtered_table column_objects in
-        cols |> print_2D_array; rep_loop ()
+        select_apply command_subject_lst command_formatter_lst column_objects;
+        rep_loop ()
       end
     | InsertInto (table_name, column_objects_opt) -> begin
-        let raw_table = get_table table_name in
-        let inserted_table = insert (get_values command_subject_lst) 
-            column_objects_opt raw_table
-        in
-        update_database table_name inserted_table;
-        inserted_table |>print_2D_array; rep_loop ()
+        insertinto_apply command_subject_lst table_name column_objects_opt;
+        rep_loop ()
       end
     | Update table_name -> begin
-        let raw_table = get_table table_name in
-        let updated_table = match get_where_exprs_opt command_subject_lst with 
-          | None -> update (all_pass raw_table) 
-                      (get_sets command_subject_lst) raw_table
-          | Some exprs -> update (where exprs raw_table) 
-                            (get_sets command_subject_lst) raw_table
-        in
-        update_database table_name updated_table;
-        updated_table |>print_2D_array; rep_loop ()
+        update_apply command_subject_lst command_formatter_lst table_name; 
+        rep_loop()
       end
     | Delete-> begin
-        let table_name = get_table_name command_subject_lst in 
-        let raw_table = get_table table_name in
-        match get_where_exprs_opt command_subject_lst with
-          None -> begin 
-            Iohandler.delete_file (Hashtbl.find database table_name|> fst) 
-              table_name; 
-            Hashtbl.remove database table_name;
-            print_string table_name; 
-            print_endline " deleted.";
-            rep_loop ()
-          end
-        | Some exprs -> begin
-            let modified_table = delete (where exprs raw_table) raw_table in
-            update_database table_name modified_table;
-            modified_table |>print_2D_array; rep_loop ()
-          end
+        delete_apply command_subject_lst command_formatter_lst;
+        rep_loop()
       end
     | Quit -> print_endline("Quiting database"); exit 0
   end 
