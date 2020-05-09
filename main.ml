@@ -25,6 +25,12 @@ let update_database name table =
   Hashtbl.replace database name (directory, table);
   Iohandler.update_csv_files name database
 
+(** [print_table_names ()] is [()] with side effects of printing all table name 
+    in [database]*)
+let print_table_names () = 
+  print_endline "\n\nLoaded tables: "; 
+  Hashtbl.iter (fun a _ -> print_string a; print_endline " ") database
+
 (** [get_table_name command_subject_lst] is the [table_name] represented in 
     [FROM] in [command_subject_lst] 
     Raise: [Not_found] when [FROM] is not found*)
@@ -81,8 +87,9 @@ let get_formatted command_formatter table = match command_formatter with
   | [OrderBy x] -> order_by x table
   | _ -> failwith "Unexpected formatter"
 
-(** [select_apply command_subject_lst command_formatter_lst column_objects]  
-    applies SELECT command to the database and the filesystem
+(** [select_apply command_subject_lst command_formatter_lst column_objects] 
+    is [()]  
+    Side effects: applies SELECT command to the database and the filesystem
     , given the parameters.*)
 let select_apply command_subject_lst command_formatter_lst column_objects = 
   let table_name = get_table_name command_subject_lst in 
@@ -96,8 +103,8 @@ let select_apply command_subject_lst command_formatter_lst column_objects =
   let cols = get_columns filtered_table column_objects in
   cols |> print_2D_array
 
-(** [insertinto_apply command_subject_lst table_name column_objects_opt]  
-    applies INSERTINTO command to the database and the filesystem, 
+(** [insertinto_apply command_subject_lst table_name column_objects_opt] is [()] 
+    Side effects: applies INSERTINTO command to the database and the filesystem, 
     given the parameters. *)
 let insertinto_apply command_subject_lst table_name column_objects_opt =
   let raw_table = get_table table_name in
@@ -107,8 +114,8 @@ let insertinto_apply command_subject_lst table_name column_objects_opt =
   update_database table_name inserted_table;
   inserted_table |>print_2D_array
 
-(** [update_apply command_subject_lst command_formatter_lst table _name]
-    applies UPDATE command to the database and the filesystem,
+(** [update_apply command_subject_lst command_formatter_lst table _name] is [()]
+    Side effects: applies UPDATE command to the database and the filesystem,
     given the paramters. *)
 let update_apply command_subject_lst command_formatter_lst table_name =
   let raw_table = get_table table_name in
@@ -121,8 +128,9 @@ let update_apply command_subject_lst command_formatter_lst table_name =
   update_database table_name updated_table;
   updated_table |>print_2D_array
 
-(** [delete_apply command_subject_lst command_formmatter_lst] applies DELETE
-    command to the database and the filesystem, givne the paramters. *)
+(** [delete_apply command_subject_lst command_formmatter_lst] returns [()]
+    Side effects: applies DELETE command to the database and the 
+    filesystem, givne the paramters. *)
 let delete_apply command_subject_lst command_formatter_lst =
   let table_name = get_table_name command_subject_lst in 
   let raw_table = get_table table_name in
@@ -140,8 +148,13 @@ let delete_apply command_subject_lst command_formatter_lst =
       modified_table |>print_2D_array
     end
 
+(** [rep_loop ()] is [()] 
+    Side effects: prompt the user to type command and process command 
+    and loop back. If quit command is entered, the program terminates
+*)
 let rec rep_loop () : unit=
-  print_string "\n\n Enter command: \n\n > ";
+  print_table_names ();
+  print_string "\n\nEnter command: \n\n> ";
   try begin 
     let (command_verb, command_subject_lst, command_formatter_lst) = 
       parse (read_line ()) 
