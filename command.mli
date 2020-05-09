@@ -2,10 +2,12 @@
    Parsing of user commands.
 *)
 
+(** [bi_op] type represents binary relation for boolean expressions*)
 type bi_op = 
     AND
   | OR
 
+(** [bi_re] type represents comparison relation*)
 type bi_re = 
     GT
   | EQ
