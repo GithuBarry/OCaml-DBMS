@@ -2,8 +2,10 @@ open Csv
 open Hashtbl
 open Sys
 
+(**[rmv_csv_tl s] removes .csv at the end*)
 let rmv_csv_tl (s:string) = String.sub s 0 (String.length s -4)
 
+(**[is_csv s] checks whether [s] is a filename with .csv*)
 let is_csv (s:string) : bool =
   let len = String.length s in
   if len < 4 then false
@@ -39,7 +41,7 @@ let delete_file dir file =
   Sys.remove (file^".csv");
   Sys.chdir original_directory
 
-(** [update_csv_files fn hastbl] updates the csv_files in [fn] with data from
+(** [update_csv_files fn hastbl] updates the csv_file in [fn] with data from
     [hastbl].*)
 let update_csv_files fn hastbl =
   let original_directory = Sys.getcwd () in
@@ -53,6 +55,8 @@ let update_csv_files fn hastbl =
 let is_dir dir = 
   try is_directory dir with x -> false
 
+(** [add_data_tohtbl tbl dir] adds [tbl] from directory [dir] to the Hashtbl.
+    This function is helper function for [csvs_in_hastbl tbl dir]*)
 let rec add_data_to_htbl tbl dir = function
   | [] -> ()
   | h::t -> 
