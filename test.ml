@@ -4,6 +4,18 @@ open Datatable
 open Command
 open Iohandler
 
+(* Test plan: We automatically tested all top-level functions defined in 
+   Datatable and Command. Most testing for iohandler was done manually, as 
+   writing OUnit tests that manipulate files across multiple directories is not 
+   sensible. The test cases for both Datatable and Command were developed using 
+   glass box methods: we designed tests to exhaust every branch of our pattern 
+   matching and conditionals, to ensure that they worked as expected. 
+   This is why this test suite demostrates the correctness of the system. We
+   tested Command.parse with every type of valid input, and every top-level 
+   function with every type of command object. Finally, we did several manual 
+   tests with csv's with thousands of rows, and found that all aspects
+   of the system (Command, Datatable, Iohandler, Main), are correct.*)
+
 (** [print_array array] prints every element in [array]*)
 let print_array array =
   Array.iter print_string array
@@ -125,29 +137,32 @@ let datatable_tests : test list =
     equal_test "11" [|  [|"one"; "two"; "three"; "four"|]; 
                         [| ""  ; ""   ; ""     ;  ""   |]; 
                         [| ""  ; ""   ; ""     ;  ""   |]; 
-                        [| ""  ; ""   ; ""     ;  ""   |]  |] (create_4x4 empty);
+                        [| ""  ; ""   ; ""     ;  ""   |] |] (create_4x4 empty);
 
     equal_test "12" [|  [|"one"; "two"; "three"; "four"; "five"|]; 
                         [| ""  ; ""   ; ""     ;  ""   ;  ""   |]; 
                         [| ""  ; ""   ; ""     ;  ""   ;  ""   |]; 
-                        [| ""  ; ""   ; ""     ;  ""   ;  ""   |]  |] (create_4x5 empty);
+                        [| ""  ; ""   ; ""     ;  ""   ;  ""   |]  |] 
+                                                             (create_4x5 empty);
 
     equal_test "13" [|  [|"one"; "two"; "three"; "four"|]; 
                         [| ""  ; ""   ; ""     ;  ""   |]; 
                         [| ""  ; ""   ; ""     ;  ""   |]; 
                         [| ""  ; ""   ; ""     ;  ""   |]; 
-                        [| ""  ; ""   ; ""     ;  ""   |]  |] (create_5x4 empty);
+                        [| ""  ; ""   ; ""     ;  ""   |] |] (create_5x4 empty);
 
     equal_test "14" [|  [|"one"; "two"; "three"; "four"; "five"|]; 
                         [| ""  ; ""   ; ""     ;  ""   ;  ""   |]; 
                         [| ""  ; ""   ; ""     ;  ""   ;  ""   |]; 
                         [| ""  ; ""   ; ""     ;  ""   ;  ""   |]; 
-                        [| ""  ; ""   ; ""     ;  ""   ;  ""   |]  |] (create_5x5 empty);
+                        [| ""  ; ""   ; ""     ;  ""   ;  ""   |]  |] 
+                                                             (create_5x5 empty);
 
-    (*Testing that del_col is functioning as intended. Also a few del_row tests*)    
+    (*Testing that del_col and del_row are functioning as intended. *)    
     equal_test "15" empty (del_col "one" (create_1x1 empty));
 
-    (* equal_test "16" [|[|"one"|]|] (del_col "wrong name" (create_1x1 empty)); *)
+    (* Test that it throws Invalid_argument *)
+    (*equal_test "16" [|[|"one"|]|] (del_col "wrong name" (create_1x1 empty));*)
 
     equal_test "17" [|[|"two"|]|] (del_col "one" (create_1x2 empty));
 
@@ -165,23 +180,25 @@ let datatable_tests : test list =
                         [| ""   |]; 
                         [| ""   |]  |] (del_col "two" (create_3x2 empty));
 
-    equal_test "23" [|  [|"two"; "three"|]; 
-                        [| ""   ; ""    |]; 
-                        [| ""   ; ""    |]  |] (del_col "one" (create_3x3 empty));
+    equal_test "23" [| [|"two"; "three"|]; 
+                       [| ""   ; ""    |]; 
+                       [| ""   ; ""    |] |] (del_col "one" (create_3x3 empty));
 
-    equal_test "24" [|  [|"one"; "three"|]; 
-                        [| ""   ; ""    |]; 
-                        [| ""   ; ""    |]  |] (del_col "two" (create_3x3 empty));
+    equal_test "24" [| [|"one"; "three"|]; 
+                       [| ""   ; ""    |]; 
+                       [| ""   ; ""    |] |] (del_col "two" (create_3x3 empty));
 
-    equal_test "25" [|  [|"one"; "two"|]; 
-                        [| ""   ; ""  |]; 
-                        [| ""   ; ""  |]  |] (del_col "three" (create_3x3 empty));
+    equal_test "25" [| [|"one"; "two"|]; 
+                       [| ""   ; ""  |]; 
+                       [| ""   ; ""  |] |] (del_col "three" (create_3x3 empty));
 
     equal_test "26" [|  [|"one"; "two"; "three"|]; 
-                        [| ""  ; ""   ; ""     |]; |] (del_row 1 (create_3x3 empty));
+                        [| ""  ; ""   ; ""     |]; |] 
+                                                 (del_row 1 (create_3x3 empty));
 
     equal_test "27" [|  [|"one"; "two"; "three"|]; 
-                        [| ""  ; ""   ; ""     |]; |] (del_row 2 (create_3x3 empty));
+                        [| ""  ; ""   ; ""     |]; |] 
+                                                 (del_row 2 (create_3x3 empty));
 
     (*Testing that change_cell and  del_row is functioning as intended*)
     equal_test "28" [|  [|"one"; "two"; "three"; "four"; "five"|]; 
@@ -293,28 +310,27 @@ let datatable_tests : test list =
       (select (where (Expr ("Age", LT, "24")) (sampleCSV empty) ) 
          (sampleCSV empty));
 
-
     equal_test "46" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Thomas"; "20" ; "USA"|]; |] 
       (select (where (Binary (AND, Expr ("Age", EQ, "20"), 
-                              Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
+        Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "47" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (select (where (Binary (OR, Expr ("Age", GT, "21"), 
-                              (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
+        (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
                  (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "48" [| [|"Name"  ; "Age"; "Loc"|]; |] 
       (select (where (Binary (AND, Expr ("Name", EQ, "Thomas"),
-                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
                  (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "49"  [| [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Thomas"; "20" ; "USA"|]; |] 
       (select (where (Binary (OR, Expr ("Name", EQ, "Thomas"), 
-                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
                  (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "50"  [| [|"one" ;"two" ;"three";"four";"five"|]; 
@@ -322,11 +338,10 @@ let datatable_tests : test list =
                         [|"30"  ;"31"  ; "32"  ; "33" ; "34" |]; 
                         [|"40"  ;"41"  ; "42"  ; "43" ; "44" |];  |] 
       (select(where (Binary (OR, Expr ("one", GTEQ, "30"),
-                             (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
+        (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
                 (create_filled_5x5 empty) ) (create_filled_5x5 empty));
 
     (*Testing that delete is woking as intended*) 
-
     equal_test "51" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
@@ -352,19 +367,19 @@ let datatable_tests : test list =
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Binary (AND, Expr ("Age", EQ, "20"), 
-                              Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
+        Expr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "56" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Thomas"; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Binary (AND, Expr ("Age", EQ, "20"), 
-                              Expr ("Age", EQ, "24"))) (sampleCSV empty) ) (sampleCSV empty));
+        Expr ("Age", EQ, "24"))) (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "57" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Thomas"; "20" ; "USA"|];  |] 
       (delete (where (Binary (OR, Expr ("Age", GT, "21"),
-                              (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
+        (Binary (AND, Expr ("Loc", EQ, "CHN"), Expr ("Name", EQ, "Barry"))))) 
                  (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "58" [|  [|"Name"  ; "Age"; "Loc"|]; 
@@ -372,20 +387,20 @@ let datatable_tests : test list =
                         [|"Thomas"; "20" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Binary (AND, Expr ("Name", EQ, "Thomas"),
-                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
                  (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "59" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (delete (where (Binary (OR, Expr ("Name", EQ, "Thomas"),
-                              (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
+        (Binary (AND, Expr ("Name", EQ, "Leo"), Expr ("Name", EQ, "Barry"))))) 
                  (sampleCSV empty) ) (sampleCSV empty));
 
     equal_test "60" [|  [|"one" ;"two" ;"three";"four";"five" |];  
                         [|"20"  ;"21"  ; "22"  ; "23" ; "24"  |];  |] 
       (delete (where (Binary (OR, Expr ("one", GTEQ, "30"),
-                              (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
+        (Binary (AND, Expr ("two", EQ, "11"), Expr ("four", LTEQ, "13"))))) 
                  (create_filled_5x5 empty) ) (create_filled_5x5 empty));
 
     (*Testing that update is woking as intended*) 
@@ -427,7 +442,6 @@ let datatable_tests : test list =
          ([("Loc","CAN")]) ((sampleCSV empty)));
 
     (*Testing that insert is woking as intended*)
-
     equal_test "66" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Thomas"; "20" ; "USA"|]; 
@@ -467,7 +481,6 @@ let datatable_tests : test list =
       (insert ([]) (Some (Columns [])) (sampleCSV empty) ) ;
 
     (*Testing that NotExpr is working properly *)
-    
     equal_test "71" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
@@ -487,90 +500,132 @@ let datatable_tests : test list =
     equal_test "74" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Barry" ; "20" ; "CHN"|]  |] 
       (select (where (Binary (AND, Expr ("Age", EQ, "20"), 
-                              NotExpr ("Loc", EQ, "USA"))) (sampleCSV empty) ) (sampleCSV empty));
-
+                              NotExpr ("Loc", EQ, "USA"))) (sampleCSV empty) ) 
+                                (sampleCSV empty));
+ 
     equal_test "75" [|  [|"Name"  ; "Age"; "Loc"|]; 
                         [|"Leo"   ; "24" ; "USA"|]; 
                         [|"Thomas"; "20" ; "USA"|];  |] 
       (select (where (Binary (OR, NotExpr ("Age", LT, "21"), 
-                              (Binary (AND, Expr ("Age", EQ, "20"), NotExpr ("Name", EQ, "Barry"))))) 
-                 (sampleCSV empty) ) (sampleCSV empty));
-  ]
+        (Binary (AND, Expr ("Age", EQ, "20"), NotExpr ("Name", EQ, "Barry"))))) 
+          (sampleCSV empty) ) (sampleCSV empty));
+
+    (* Testing that order_by is working properly *)
+    equal_test "76" [|  [|"Name"  ; "Age"; "Loc"|];
+                        [|"Barry" ; "20" ; "CHN"|]; 
+                        [|"Leo"   ; "24" ; "USA"|];  
+                        [|"Thomas"; "20" ; "USA"|]; |] 
+                          (order_by [("Name", true);] (sampleCSV empty));
+
+    equal_test "77" [|  [|"Name"  ; "Age"; "Loc"|];
+                        [|"Thomas"; "20" ; "USA"|]; 
+                        [|"Leo"   ; "24" ; "USA"|];  
+                        [|"Barry" ; "20" ; "CHN"|];  |] 
+                          (order_by [("Name", false);] (sampleCSV empty));  
+
+    equal_test "78" [|  [|"Name"  ; "Age"; "Loc"|];
+                        [|"Leo"   ; "24" ; "USA"|];
+                        [|"Barry" ; "20" ; "CHN"|];
+                        [|"Thomas"; "20" ; "USA"|];  |] 
+                          (order_by [("Age", true);] (sampleCSV empty)); 
+
+    equal_test "79" [|  [|"Name"  ; "Age"; "Loc"|];
+                        [|"Thomas"; "20" ; "USA"|];
+                        [|"Barry" ; "20" ; "CHN"|];
+                        [|"Leo"   ; "24" ; "USA"|];  |]
+                          (order_by [("Age", false);] (sampleCSV empty)); 
+
+    equal_test "80" [|  [|"one" ;"two" ;"three";"four";"five"|]; 
+                        [|"40"  ;"41"  ; "42"  ; "43" ; "44" |];  
+                        [|"30"  ;"31"  ; "32"  ; "33" ; "34" |]; 
+                        [|"20"  ;"21"  ; "22"  ; "23" ; "24" |]; 
+                        [|"10"  ;"11"  ; "12"  ; "13" ; "14" |];  |]
+                          (order_by [("three", true);]  
+                            (create_filled_5x5 empty));                         
+]
 
 let parser_tests : test list =  
   [
-    tester "parser DELETE 1" (Delete, [From "lemon"; Where (Expr ("name", EQ, "lemon"))], [])
-      (parse "DELETE FROM lemon WHERE name = lemon");
+    tester "parser DELETE 1" 
+      (Delete, [From "lemon"; Where (Expr ("name", EQ, "lemon"))], [])
+        (parse "DELETE FROM lemon WHERE name = lemon");
 
-    tester "parser DELETE 2" (Delete, [From "Roster"], []) (parse "DELETE FROM Roster");
+    tester "parser DELETE 2" 
+      (Delete, [From "Roster"], []) (parse "DELETE FROM Roster");
 
-    tester "parser DELETE 3" (Delete, [From "cornell univ roster"; Where (Expr ("net id number", GT, "3"))], [])
-      (parse "DELETE FROM cornell univ roster WHERE net id number > 3");
+    tester "parser DELETE 3" 
+      (Delete, [From "cornell univ roster"; 
+        Where (Expr ("net id number", GT, "3"))], [])
+          (parse "DELETE FROM cornell univ roster WHERE net id number > 3");
 
-    tester "parse INSERT 1" (InsertInto ("x", Some (Columns ["col1"; "col2"])), [Values ["val1"; "val2"]],[]) 
-      (parse "INSERT INTO x (col1,col2) VALUES ( val1 , val2 )");
+    tester "parse INSERT 1" 
+      (InsertInto ("x", Some (Columns ["col1"; "col2"])), 
+        [Values ["val1"; "val2"]],[]) 
+          (parse "INSERT INTO x (col1,col2) VALUES ( val1 , val2 )");
 
-    tester "parse INSERT 2" (InsertInto ("x", Some (Columns ["col1"; "col2"])), [Values ["val1"; "val2"]],[]) 
-      (parse "INSERT INTO x (col1,col2) VALUES (val1,val2)");
+    tester "parse INSERT 2" 
+      (InsertInto ("x", Some (Columns ["col1"; "col2"])), 
+        [Values ["val1"; "val2"]],[]) 
+          (parse "INSERT INTO x (col1,col2) VALUES (val1,val2)");
 
-    tester "parse INSERT 3" (InsertInto ("x", None), [Values ["val1"; "val2"]],[]) 
-      (parse "INSERT INTO x VALUES (val1,val2)");
+    tester "parse INSERT 3" 
+      (InsertInto ("x", None), [Values ["val1"; "val2"]],[]) 
+        (parse "INSERT INTO x VALUES (val1,val2)");
 
-    tester "parse INSERT 4" (InsertInto ("x", Some (Columns ["col1"; "col2"])), [Values ["val1"; "val2"]],[]) 
-      (parse "INSERT INTO x ( col1,col2 )  VALUES ( val1,val2 )");
+    tester "parse INSERT 4" 
+      (InsertInto ("x", Some (Columns ["col1"; "col2"])), 
+        [Values ["val1"; "val2"]],[]) 
+          (parse "INSERT INTO x ( col1,col2 )  VALUES ( val1,val2 )");
 
-    tester "parse SELECT 1" (Select Wildcard, [From "X"; Where (Expr ("Y", GT, "0"))], [])
-      (parse "SELECT * FROM X WHERE Y > 0");
-
+    tester "parse SELECT 1" 
+      (Select Wildcard, [From "X"; Where (Expr ("Y", GT, "0"))], [])
+        (parse "SELECT * FROM X WHERE Y > 0");
 
     tester "parse SELECT 2" (Select Wildcard, [From "X"], [])
       (parse "SELECT * FROM X");
 
     tester "parse SELECT 3: OR has high priority" 
       (Select Wildcard, [From "medicine"; Where (
-           Binary (OR,Binary 
-                     (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
-                   Expr ("emergency auth", EQ, "true")))],
+        Binary (OR,Binary 
+          (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
+                Expr ("emergency auth", EQ, "true")))],
        [])
       (parse "SELECT * FROM medicine WHERE status = valid AND medicine = valid OR emergency auth = true");
 
     tester "parse SELECT 4" 
       (Select Wildcard,
        [From "table name"; Where (Binary (OR,
-                                          Binary (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
-                                          Binary (AND, Expr ("emergency auth", EQ, "true"),
-                                                  Expr ("is banned", EQ, "false"))))],
-       [OrderBy [("Date", true); ("No", false)]])
-      (parse "SELECT * FROM table name WHERE status = valid AND medicine = valid OR emergency auth = true AND is banned = false ORDER BY Date DESC, No ASC");
+                                  Binary (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
+                                  Binary (AND, Expr ("emergency auth", EQ, "true"),
+                                               Expr ("is banned", EQ, "false"))))],
+        [OrderBy [("Date", true); ("No", false)]])
+          (parse "SELECT * FROM table name WHERE status = valid AND medicine = valid OR emergency auth = true AND is banned = false ORDER BY Date DESC, No ASC");
 
     tester "parse SELECT 5 with NOT" 
       (Select Wildcard,
        [From "table name";Where(Binary (OR,
-                                        Binary (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
-                                        Binary (AND, Expr ("emergency auth", EQ, "true"),
-                                                NotExpr ("NOT is banned", EQ, "false"))))],
-       [OrderBy [("Date", true); ("No", false)]])
-      (parse "SELECT * FROM table name WHERE status = valid AND medicine = valid OR emergency auth = true AND NOT is banned = false ORDER BY Date DESC, No ASC");
+                                Binary (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
+                                Binary (AND, Expr ("emergency auth", EQ, "true"),
+                                             NotExpr ("NOT is banned", EQ, "false"))))],
+        [OrderBy [("Date", true); ("No", false)]])
+          (parse "SELECT * FROM table name WHERE status = valid AND medicine = valid OR emergency auth = true AND NOT is banned = false ORDER BY Date DESC, No ASC");
 
-    tester "Parse UPDATE 1" (Update "table",
-                             [Where (Expr ("age", GT, "21")); Set [("name", "adult"); ("drinking", "ok")]],
-                             []) (parse "UPDATE table SET name = adult, drinking = ok WHERE age > 21");
+    tester "Parse UPDATE 1" (Update "table", [Where 
+      (Expr ("age", GT, "21")); Set [("name", "adult"); ("drinking", "ok")]],[]) 
+        (parse "UPDATE table SET name = adult, drinking = ok WHERE age > 21");
 
-    tester "Parse UPDATE 2" (Update "table",
-                             [Where (Binary (AND, Expr ("age", GT, "21"), Expr ("status", EQ, "active")));
-                              Set [("name", "adult"); ("drinking", "ok")]],
-                             []) (parse "UPDATE table SET name = adult, drinking = ok WHERE age > 21 AND status = active");
+    tester "Parse UPDATE 2" (Update "table", [Where 
+      (Binary (AND, Expr ("age", GT, "21"), Expr ("status", EQ, "active")));
+        Set [("name", "adult"); ("drinking", "ok")]], []) 
+          (parse "UPDATE table SET name = adult, drinking = ok WHERE age > 21 AND status = active");
   ]
 
 let iohandler_test = [
-  tester "testing list_of_dir" ["./leo";"./examples"] (Iohandler.list_of_dir "  ./leo   ,  ./examples");
+  tester "testing list_of_dir" ["./leo";"./examples"] 
+    (Iohandler.list_of_dir "  ./leo   ,  ./examples");
   tester "testing list_of_dir" [""] (Iohandler.list_of_dir "");
   tester "testing list_of_dir" ["./leo"] (Iohandler.list_of_dir " ./leo ");
-
 ]
-
-(*============================================================================*)
-(*============================================================================*)
 
 let suite =
   "test suite for A2"
