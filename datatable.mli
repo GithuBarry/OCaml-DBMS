@@ -57,7 +57,8 @@ val change_cell : int -> int -> string -> t -> t
 (** [get_col_data tbl s] is the data stored in [tbl] in the columns whose names
     are listed in [s] 
     Requires: [tbl] contains all columns named in [s] 
-    Raises: [Invalid_Argument] if [tbl] does not contains a column named in [s] *)
+    Raises: [Invalid_Argument] if [tbl] does not contains a column named 
+    in [s] *)
 val get_cols_data : string list -> t -> t
 
 (** [where conds tbl] is a [filter] representing the rows in [tbl] that satisfy

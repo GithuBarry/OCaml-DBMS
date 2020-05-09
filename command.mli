@@ -2,10 +2,12 @@
    Parsing of user commands.
 *)
 
+(** The type [bi_op] represents binary relation for boolean expressions*)
 type bi_op = 
     AND
   | OR
 
+(** The type [bi_re] represents comparison relation*)
 type bi_re = 
     GT
   | EQ
@@ -82,16 +84,19 @@ exception Malformed
     the verb. The rest of the words, if any, become the object phrase.
     Examples: 
     - [parse " SELECT column_name1, column_name2 FROM    table_name;  "] is 
-      [Select [column_name1; column_name2] from [table_name]]
-    - [parse "quit"] is [Quit]. 
+      [(Select (Columns ["column_name1"; "column_name2"]), 
+      [From "table_name"], [])]
+    - [parse "quit"] is [Quit] [] []. 
 
     Requires: [str] contains only alphanumeric (A-Z, a-z, 0-9) and space 
     characters (only ASCII character code 32; not tabs or newlines, etc.) and
-    ends with [;].
+    without [;].
 
     Raises: [Empty] if [str] is the empty string or contains only spaces. 
 
     Raises: [Malformed] if the command is malformed. A command
-    is {i malformed} if the combination is not valid (e.g. Delete Values "s")
-    or unknown words are parsed *)
+    is [malformed] if the combination is not valid (e.g. Delete Values "s")
+    or unknown words are parsed 
+
+    Raises: [Invalid_argument] if a binary relationship cannot be parsed *)
 val parse : string -> command
