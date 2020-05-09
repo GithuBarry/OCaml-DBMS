@@ -2,5 +2,7 @@
    opam install csv
 2. In the terminal, type:
    make build
-2. In the terminal type:
+3. In the terminal type:
    make run
+
+Refer to User_Instructions.pdf for full instructions to use
