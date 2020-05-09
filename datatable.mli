@@ -1,5 +1,6 @@
-open Command
 (** This module represents a datatable *)
+open Command
+
 
 (** The type of a datatable *)
 type t = string array array
@@ -20,6 +21,7 @@ val num_cols : t -> int
 (** [num_cols tbl] is the number of rows in [tbl]*)
 val num_rows : t -> int
 
+(** [get_cols tbl] is the columns of table. *)
 val get_cols : t -> string array
 
 (** [contains_col tbl s] is [true] if [tbl] contains a column with header named

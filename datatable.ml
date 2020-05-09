@@ -1,6 +1,6 @@
 open Command
 (** AF: A datatable represented as an array of rows, for which each row is 
-    represented as array of columns. The first row is the headers of the table. 
+    represented as array of columns. The first row is the header of the table. 
     Any empty cells are represented as the empty string. 
     RI: The datatable is "rectangular": all rows have the same number of 
     columns, and all columns have the same number of rows. All columns have 
@@ -115,6 +115,7 @@ let intersect_array array_1 array_2 =
   let len = Array.length array_1 in
   intersect array_1 array_2 len (Array.make len false) 0
 
+(** [inverse_filter filter] is filter with every index negated. *) 
 let inverse_filter filter = Array.map (fun b -> not b) filter
 
 (** [filter_table tbl col_num comp obj res_array] modifies [res_array] in place,
@@ -244,7 +245,7 @@ let row_compare i row1 row2 =
   try
     let v1_int = int_of_string v1 in
     let v2_int = int_of_string v2 in
-    compare v2_int v1_int
+    compare v1_int v2_int
   with Failure x ->
     alphabetical_cmp (String.lowercase_ascii v1) (String.lowercase_ascii v2)
 
@@ -279,4 +280,4 @@ let order_by column_object_bool_lst tbl =
       let col_index = find_index col header in
       if col_index = -1 then raise (Invalid_argument "Invalid column name")
       else Array.stable_sort (row_compare col_index) n_tbl;
-      if b then prepend header n_tbl else prepend header (rev n_tbl)
+      if b then prepend header (rev n_tbl) else prepend header n_tbl
