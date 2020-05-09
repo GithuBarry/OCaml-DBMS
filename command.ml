@@ -131,21 +131,21 @@ let parse_columns str_list =  match str_list with
 
 
 (** [parse_bi_re str] returns a [bi_re] corrosponding tp [str]
-    Raise: Failure when [str] is illeagal*)
+    Raise: Invalid_argument when [str] is illeagal*)
 let parse_bi_re str = match str with 
     ">" -> GT
   | "=" -> EQ
   | "<" -> LT
   | ">=" -> GTEQ
   | "<=" -> LTEQ
-  | _ -> failwith("Internal Error: Illeagal Relation")
+  | _ -> raise (Invalid_argument ("Internal Error: Illeagal Relation"))
 
 (** [parse_bi_op str] returns a [bi_op] corrosponding tp [str]
-    Raise: Failure when [str] is illeagal*)
+    Raise: Invalid_argument when [str] is illeagal*)
 let parse_bi_op str = match str with 
     "AND" -> AND
   | "OR" -> OR
-  | _ -> failwith("Internal Error: Illeagal Operator")
+  | _ -> raise (Invalid_argument  ("Internal Error: Illeagal Operator"))
 
 (** [parse_value str_list] returns a [value_object]
     Raise: Empty when [str_list] is empty *)
