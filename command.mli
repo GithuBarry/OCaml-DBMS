@@ -93,10 +93,8 @@ exception Malformed
     without [;].
 
     Raises: [Empty] if [str] is the empty string or contains only spaces. 
-
     Raises: [Malformed] if the command is malformed. A command
     is [malformed] if the combination is not valid (e.g. Delete Values "s")
     or unknown words are parsed 
-
-    Raises: [Invalid_argument] if a binary relationship cannot be parsed *)
+    Raises: [Invalid_argument] something cannot be parsed, especially a record*)
 val parse : string -> command

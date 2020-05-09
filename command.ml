@@ -298,11 +298,10 @@ let parse_delete str_list : command =
 
 (** No support for 
     - use of [']
-    - Any title, value, name with consecutively 2+ spaces. e.g. "Last     Name" 
+    - Any title, value, name with consecutively 2+ spaces. e.g. [Last____Name]
     - Column name with [,]
-    - No space in bi-relation. "x>0" must be written as "x > 0" and etc. 
-    - Greater than wrtten as "> =" or similar separation of style
-    - Adding a space after a comma e.g. "a, b" is ["[a],[ b]"] not ["[a],[b]"]
+    - Lack of space in bi-relation. "x>0" must be written as "x > 0" and etc. 
+    - Greater than wrtten as "> =" or similar separation of binary relation
 *)
 let parse str : command= 
   let command_list_raw = String.split_on_char ' ' str in 
