@@ -606,7 +606,7 @@ let parser_tests : test list =
        [From "table name";Where(Binary (OR,
                                         Binary (AND, Expr ("status", EQ, "valid"), Expr ("medicine", EQ, "valid")),
                                         Binary (AND, Expr ("emergency auth", EQ, "true"),
-                                                NotExpr ("NOT is banned", EQ, "false"))))],
+                                                NotExpr ("is banned", EQ, "false"))))],
        [OrderBy [("Date", true); ("No", false)]])
       (parse "SELECT * FROM table name WHERE status = valid AND medicine = valid OR emergency auth = true AND NOT is banned = false ORDER BY Date DESC, No ASC");
 

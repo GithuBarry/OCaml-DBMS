@@ -181,7 +181,7 @@ let rec parse_expr str_list =
     in
     match before with 
       "NOT"::t -> 
-      NotExpr (parse_column before, parse_bi_re re, parse_value after)
+      NotExpr (parse_column t, parse_bi_re re, parse_value after)
     | _ -> Expr (parse_column before, parse_bi_re re, parse_value after)
 
 
